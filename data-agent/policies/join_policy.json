@@ -1,0 +1,83 @@
+{
+  "version": "0.1.0",
+  "allowed": [
+    {
+      "name": "kline_to_stock_board_current",
+      "left": "Stock.v_kline",
+      "right": "Stock.stock_board_data",
+      "join": "Stock.v_kline.code = Stock.stock_board_data.stock_code",
+      "date_policy": "mapping_snapshot",
+      "caveat": "stock_board_data is current mapping only; check catalog flags"
+    },
+    {
+      "name": "kline_to_margin_detail_same_day",
+      "left": "Stock.v_kline",
+      "right": "Stock.margin_detail_snapshot",
+      "join": "Stock.v_kline.code = LEFT(Stock.margin_detail_snapshot.ts_code, 6) AND Stock.v_kline.date = Stock.margin_detail_snapshot.trade_date",
+      "date_policy": "same_day",
+      "caveat": "margin data freshness must be disclosed when stale"
+    },
+    {
+      "name": "kline_to_stock_moneyflow_same_day",
+      "left": "Stock.v_kline",
+      "right": "Stock.stock_moneyflow_snapshot",
+      "join": "Stock.v_kline.code = LEFT(Stock.stock_moneyflow_snapshot.ts_code, 6) AND Stock.v_kline.date = Stock.stock_moneyflow_snapshot.trade_date",
+      "date_policy": "same_day",
+      "caveat": "stock moneyflow is unit 万元 and may be short-history/stale"
+    },
+    {
+      "name": "kline_to_stock_moneyflow_yi_same_day",
+      "left": "Stock.v_kline",
+      "right": "Stock.v_stock_moneyflow_yi",
+      "join": "Stock.v_kline.code = Stock.v_stock_moneyflow_yi.code AND Stock.v_kline.date = Stock.v_stock_moneyflow_yi.trade_date",
+      "date_policy": "same_day",
+      "caveat": "semantic view is normalized to 亿元 but may be short-history/stale"
+    },
+    {
+      "name": "toplist_to_topinst_same_day",
+      "left": "Stock.top_list_snapshot",
+      "right": "Stock.top_inst_snapshot",
+      "join": "ts_code, trade_date",
+      "date_policy": "same_day",
+      "caveat": "aggregate institution rows before stock-level claims"
+    },
+    {
+      "name": "ths_daily_to_ths_moneyflow_same_day",
+      "left": "Stock.ths_daily_snapshot",
+      "right": "Stock.ths_moneyflow_snapshot",
+      "join": "ts_code, trade_date",
+      "date_policy": "same_day",
+      "caveat": "use common overlapping dates; disclose stale THS daily data"
+    },
+    {
+      "name": "ths_daily_to_ths_moneyflow_yi_same_day",
+      "left": "Stock.ths_daily_snapshot",
+      "right": "Stock.v_board_moneyflow_ths_yi",
+      "join": "ts_code, trade_date",
+      "date_policy": "same_day",
+      "caveat": "use common overlapping dates; disclose stale THS daily data"
+    },
+    {
+      "name": "research_stock_to_kline",
+      "left": "Stock.report_rc_snapshot",
+      "right": "Stock.v_kline",
+      "join": "LEFT(Stock.report_rc_snapshot.ts_code, 6) = Stock.v_kline.code",
+      "date_policy": "event_to_daily_explicit",
+      "caveat": "report_date is publication date; quarter is forecast period"
+    }
+  ],
+  "forbidden": [
+    {
+      "name": "dc_to_ths_board_code_or_name",
+      "left_pattern": "Stock.(dc_moneyflow_snapshot|v_board_moneyflow_dc_yi)",
+      "right_pattern": "Stock.(ths_|v_board_moneyflow_ths_yi)",
+      "reason": "DC board codes and THS board codes are not directly joinable; fuzzy name matching must be explicit exploratory work"
+    },
+    {
+      "name": "market_sentiment_to_stock_or_board_ranking",
+      "left_pattern": "finance.sentiment_index",
+      "right_pattern": "Stock.v_kline|Stock.stock_board_data|Stock.ths_|Stock.dc_",
+      "reason": "finance.sentiment_index is market-level, not stock/sector-level sentiment"
+    }
+  ]
+}

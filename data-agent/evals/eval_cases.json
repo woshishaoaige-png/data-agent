@@ -1,0 +1,216 @@
+{
+  "version": "0.1.0",
+  "description": "Executable QueryGuard regression cases. These are static guardrail checks, not full answer grading.",
+  "cases": [
+    {
+      "id": "block_raw_kline_shard",
+      "intent": "平安银行最近20个交易日收盘价",
+      "sql": "SELECT date, close FROM Stock.kline_000 WHERE code='000001' ORDER BY date DESC LIMIT 20",
+      "expect_status": "BLOCK",
+      "must_contain": ["do_not_query"]
+    },
+    {
+      "id": "allow_v_kline_basic",
+      "intent": "平安银行最近20个交易日收盘价",
+      "sql": "SELECT date, close FROM Stock.v_kline WHERE code='000001' ORDER BY date DESC LIMIT 20",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "block_single_stock_holder_rank",
+      "intent": "全市场股东户数最少股票排名",
+      "sql": "SELECT ts_code, holder_num FROM Stock.holder_number_snapshot ORDER BY holder_num ASC LIMIT 20",
+      "expect_status": "BLOCK",
+      "must_contain": ["single_stock_misuse"]
+    },
+    {
+      "id": "block_short_history_board_trend",
+      "intent": "最近半年板块成分变化趋势",
+      "sql": "SELECT trade_date, COUNT(DISTINCT con_code) FROM Stock.ths_board_member GROUP BY trade_date ORDER BY trade_date",
+      "expect_status": "BLOCK",
+      "must_contain": ["short_history_trend"]
+    },
+    {
+      "id": "block_unit_mismatch_money_compare",
+      "intent": "北向资金和大盘主力资金谁流入更多，直接给倍数",
+      "sql": "SELECT h.north_money, m.net_amount FROM Stock.hsgt_moneyflow_snapshot h JOIN Stock.dc_moneyflow_mkt_snapshot m ON h.trade_date=m.trade_date",
+      "expect_status": "BLOCK",
+      "must_contain": ["unit_mismatch"]
+    },
+    {
+      "id": "warn_unit_normalized_money_compare",
+      "intent": "北向资金和个股主力资金谁流入更多，统一到亿元",
+      "sql": "SELECT h.trade_date, h.north_money/10000 AS north_yi, SUM(s.buy_lg_amount - s.sell_lg_amount)/10000 AS stock_main_yi FROM Stock.hsgt_moneyflow_snapshot h JOIN Stock.stock_moneyflow_snapshot s ON h.trade_date=s.trade_date GROUP BY h.trade_date, h.north_money",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "block_dc_ths_fuzzy_join",
+      "intent": "用东财概念板块资金流匹配同花顺概念板块涨幅，名字一样就行",
+      "sql": "SELECT d.name, d.net_amount, t.pct_change FROM Stock.dc_moneyflow_snapshot d JOIN Stock.ths_daily_snapshot t ON d.name=t.name",
+      "expect_status": "BLOCK",
+      "must_contain": ["forbidden_join:dc_to_ths_board_code_or_name"]
+    },
+    {
+      "id": "block_market_sentiment_stock_rank",
+      "intent": "情绪指数最高的股票是哪只",
+      "sql": "SELECT k.code, k.name, s.total_score FROM finance.sentiment_index s JOIN Stock.v_kline k ON s.trade_date=k.date ORDER BY s.total_score DESC LIMIT 10",
+      "expect_status": "BLOCK",
+      "must_contain": ["market_sentiment_to_stock_or_board_ranking"]
+    },
+    {
+      "id": "warn_stale_latest_margin",
+      "intent": "今天融资余额最高的前10只股票",
+      "sql": "SELECT ts_code, rzye/100000000 AS rzye_yi FROM Stock.margin_detail_snapshot ORDER BY rzye DESC LIMIT 10",
+      "expect_status": "WARN",
+      "must_contain": ["stale_current"]
+    },
+    {
+      "id": "allow_registered_toplist_join",
+      "intent": "今天龙虎榜机构净买入最多的股票",
+      "sql": "SELECT l.ts_code, SUM(i.net_buy)/100000000 AS net_buy_yi FROM Stock.top_list_snapshot l JOIN Stock.top_inst_snapshot i ON l.ts_code=i.ts_code AND l.trade_date=i.trade_date GROUP BY l.ts_code ORDER BY net_buy_yi DESC LIMIT 10",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "allow_semantic_top_inst_view",
+      "intent": "今天龙虎榜机构净买入最多的股票",
+      "sql": "SELECT code, net_buy_yi FROM Stock.v_top_inst_net_yi ORDER BY net_buy_yi DESC LIMIT 10",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "allow_semantic_stock_flow_view",
+      "intent": "个股主力资金净流入最高的股票，金额已经是亿元",
+      "sql": "SELECT code, main_net_yi FROM Stock.v_stock_moneyflow_yi ORDER BY main_net_yi DESC LIMIT 10",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "block_strategy_wrong_date_trend",
+      "intent": "暴力K最近一个月胜率趋势",
+      "sql": "SELECT trade_date, COUNT(*) FROM Stock.violent_k_signals GROUP BY trade_date ORDER BY trade_date",
+      "expect_status": "BLOCK",
+      "must_contain": ["short_history_trend"]
+    },
+    {
+      "id": "warn_tiny_market_flow",
+      "intent": "大盘资金流过去三个月趋势明显转暖了吗",
+      "sql": "SELECT trade_date, net_amount/100000000 AS net_yi FROM Stock.dc_moneyflow_mkt_snapshot ORDER BY trade_date",
+      "expect_status": "WARN",
+      "must_contain": ["tiny_source"]
+    },
+    {
+      "id": "allow_market_breadth_today",
+      "intent": "今天全市场涨幅最高的10只股票",
+      "sql": "SELECT code, name, pctChg FROM Stock.v_kline WHERE date = (SELECT MAX(date) FROM Stock.v_kline) ORDER BY pctChg DESC LIMIT 10",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "allow_stock_sector_mapping",
+      "intent": "000001 属于哪些行业和概念",
+      "sql": "SELECT stock_code, sw_l1, sw_l2, sw_l3, ths_concepts FROM Stock.stock_board_data WHERE stock_code='000001'",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "warn_board_daily_latest_stale",
+      "intent": "最新行业板块涨幅 Top5",
+      "sql": "SELECT ts_code, name, pct_change FROM Stock.ths_daily_snapshot WHERE board_type='I' AND trade_date=(SELECT MAX(trade_date) FROM Stock.ths_daily_snapshot) ORDER BY pct_change DESC LIMIT 5",
+      "expect_status": "WARN",
+      "must_contain": ["stale_current"]
+    },
+    {
+      "id": "allow_dc_board_flow_topn",
+      "intent": "用东财概念板块资金流排最新净流入 Top10",
+      "sql": "SELECT name, net_yi FROM Stock.v_board_moneyflow_dc_yi WHERE content_type='概念' AND trade_date=(SELECT MAX(trade_date) FROM Stock.v_board_moneyflow_dc_yi) ORDER BY net_yi DESC LIMIT 10",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "warn_northbound_week_tiny",
+      "intent": "北向资金最近一周净流入是多少",
+      "sql": "SELECT trade_date, north_money/10000 AS north_yi FROM Stock.hsgt_moneyflow_snapshot ORDER BY trade_date DESC LIMIT 5",
+      "expect_status": "WARN",
+      "must_contain": ["tiny_source"]
+    },
+    {
+      "id": "warn_margin_summary_trend_tiny",
+      "intent": "两市融资融券余额变化趋势",
+      "sql": "SELECT trade_date, rzye/100000000 AS rzye_yi FROM Stock.margin_summary_snapshot ORDER BY trade_date",
+      "expect_status": "WARN",
+      "must_contain": ["tiny_source"]
+    },
+    {
+      "id": "warn_toplist_kline_join_unregistered",
+      "intent": "某只龙虎榜股票当日表现如何",
+      "sql": "SELECT l.ts_code, l.reason, k.pctChg FROM Stock.top_list_snapshot l JOIN Stock.v_kline k ON LEFT(l.ts_code,6)=k.code AND l.trade_date=k.date WHERE l.ts_code='600519.SH'",
+      "expect_not_status": "BLOCK",
+      "must_contain": ["unregistered_join"]
+    },
+    {
+      "id": "allow_fund_hold_rank",
+      "intent": "机构持仓市值最高的股票排名",
+      "sql": "SELECT ts_code, hold_mv FROM Stock.fund_hold_snapshot WHERE quarter=(SELECT MAX(quarter) FROM Stock.fund_hold_snapshot) ORDER BY hold_mv DESC LIMIT 10",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "warn_report_latest_stale",
+      "intent": "研报目标价最高的股票，按最新发布研报",
+      "sql": "SELECT ts_code, max_price FROM Stock.report_rc_snapshot WHERE report_date=(SELECT MAX(report_date) FROM Stock.report_rc_snapshot) ORDER BY max_price DESC LIMIT 10",
+      "expect_status": "WARN",
+      "must_contain": ["stale_current"]
+    },
+    {
+      "id": "block_rating_single_stock_pct",
+      "intent": "stock_rating_snapshot 全市场买入评级占比，样本少也给百分比",
+      "sql": "SELECT rating, COUNT(*) FROM Stock.stock_rating_snapshot GROUP BY rating",
+      "expect_status": "BLOCK",
+      "must_contain": ["single_stock_misuse"]
+    },
+    {
+      "id": "allow_analyst_rank_latest",
+      "intent": "分析师排名最新榜单",
+      "sql": "SELECT analyst_name, org_name, ret_12m FROM Stock.analyst_rank_snapshot WHERE rank_year=(SELECT MAX(rank_year) FROM Stock.analyst_rank_snapshot) ORDER BY ret_12m DESC LIMIT 20",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "warn_sentiment_today_tiny",
+      "intent": "市场情绪今天是多少",
+      "sql": "SELECT trade_date, total_score, sentiment_tag FROM finance.sentiment_index ORDER BY trade_date DESC LIMIT 1",
+      "expect_status": "WARN",
+      "must_contain": ["tiny_source"]
+    },
+    {
+      "id": "allow_strategy_latest_list",
+      "intent": "最近 BBI-KDJ 量化策略选中了哪些股票",
+      "sql": "SELECT code, name FROM Stock.v_strategy_selection_latest WHERE is_bbi_kdj_strategy=1",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "block_etf_pool_change_short_history",
+      "intent": "ETF 池最近变化趋势",
+      "sql": "SELECT trade_date, COUNT(*) FROM Stock.etf_pool GROUP BY trade_date ORDER BY trade_date",
+      "expect_status": "BLOCK",
+      "must_contain": ["short_history_trend"]
+    },
+    {
+      "id": "warn_tmp_pool_tiny",
+      "intent": "tmp_pool_mv 里市值最高股票",
+      "sql": "SELECT * FROM Stock.tmp_pool_mv ORDER BY mktcap DESC LIMIT 1",
+      "expect_status": "WARN",
+      "must_contain": ["tiny_source"]
+    },
+    {
+      "id": "block_dc_ths_fuzzy_join_semantic_views",
+      "intent": "东财概念半导体和同花顺半导体哪个涨得多",
+      "sql": "SELECT d.name, d.net_yi, t.net_yi FROM Stock.v_board_moneyflow_dc_yi d JOIN Stock.v_board_moneyflow_ths_yi t ON d.name=t.name WHERE d.name LIKE '%半导体%'",
+      "expect_status": "BLOCK",
+      "must_contain": ["forbidden_join:dc_to_ths_board_code_or_name"]
+    }
+  ]
+}

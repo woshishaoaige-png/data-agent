@@ -1,0 +1,4809 @@
+{
+  "generated_at": "2026-06-26T17:06:38",
+  "source": "information_schema introspection (data-agent/tools/gen_catalog.py)",
+  "coverage_legend": {
+    "SINGLE_STOCK": "仅 1 只股票，禁止用于跨股票对比/排名/横截面",
+    "TINY": "行数 < 100，时序/趋势结论不可靠，须披露样本量",
+    "OK": "横截面可正常查询（仍需看 flags 判断时序能力）"
+  },
+  "flags_legend": {
+    "SHORT_HISTORY": "不同日期 < 3，禁止做趋势/时序/「过去N月」类查询",
+    "STALE_CURRENT": "真日期/新鲜度列距今 > 2 天，勿当今日/当前结果"
+  },
+  "schemas": {
+    "Stock": {
+      "analyst_rank_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 100,
+        "primary_key": [
+          "analyst_id",
+          "rank_year"
+        ],
+        "columns": [
+          {
+            "name": "analyst_id",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "analyst_name",
+            "type": "varchar(50)",
+            "key": ""
+          },
+          {
+            "name": "org_name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "year_index",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "ret_2024",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "ret_3m",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "ret_6m",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "ret_12m",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "stock_count",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "latest_stock",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "latest_code",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "industry",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "rank_year",
+            "type": "varchar(4)",
+            "key": "PRI"
+          },
+          {
+            "name": "update_date",
+            "type": "varchar(10)",
+            "key": ""
+          }
+        ],
+        "date_col": "rank_year",
+        "date_min": "2024",
+        "date_max": "2024",
+        "distinct_dates": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "broker_recommend_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 341,
+        "primary_key": [
+          "month",
+          "broker",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "month",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "broker",
+            "type": "varchar(100)",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 234,
+        "stock_col": "ts_code",
+        "date_col": "month",
+        "date_min": "202606",
+        "date_max": "202606",
+        "distinct_dates": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "daily_selection_results": {
+        "type": "BASE TABLE",
+        "row_count": 10642,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "code",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "market",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "sw_l1",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "sw_l2",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "sw_l3",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_industry",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_region",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_concepts",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "mktcap",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pe",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pb",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "date",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "price_change_1y",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "vol_avg_15d",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "white_above_yellow",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close_dist_yellow",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "is_B2战法",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "is_少妇战法",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "is_搬砖战法",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "is_补票战法",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "violent_k_count",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "violent_k_date",
+            "type": "datetime",
+            "key": ""
+          },
+          {
+            "name": "violent_k_pct_chg",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_vol",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_vol_ratio",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_prev_j",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_curr_j",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "white_line",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "white_line_deviation",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "yellow_line",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "bbi",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "K",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "D",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "J",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_min",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_max",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_quantile_5",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_quantile_10",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_quantile_25",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_quantile_50",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_quantile_90",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "j_quantile_95",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 2653,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2026-03-13",
+        "date_max": "2026-06-25 00:00:00",
+        "distinct_dates": 28,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "dc_moneyflow_mkt_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 13,
+        "primary_key": [
+          "trade_date"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "close_sh",
+            "type": "decimal(12,2)",
+            "key": ""
+          },
+          {
+            "name": "pct_change_sh",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "close_sz",
+            "type": "decimal(12,2)",
+            "key": ""
+          },
+          {
+            "name": "pct_change_sz",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "net_amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "net_amount_rate",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_amount_rate",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_amount_rate",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_md_amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_md_amount_rate",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_amount_rate",
+            "type": "decimal(8,2)",
+            "key": ""
+          }
+        ],
+        "date_col": "trade_date",
+        "date_min": "2026-06-01",
+        "date_max": "2026-06-17",
+        "distinct_dates": 13,
+        "freshness_days": 9,
+        "unit": "元",
+        "unit_source": "Eastmoney market moneyflow collector; value scale sampled",
+        "coverage": "TINY",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "dc_moneyflow_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 28987,
+        "primary_key": [
+          "trade_date",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "content_type",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "rank",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "net_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "net_amount_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_amount_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_amount_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "buy_md_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_md_amount_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_amount_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_amount_stock",
+            "type": "varchar(100)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "board_col": "ts_code"
+        },
+        "distinct_boards": 1021,
+        "board_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-25",
+        "distinct_dates": 29,
+        "freshness_days": 1,
+        "unit": "元",
+        "unit_source": "Eastmoney board moneyflow collector; value scale sampled",
+        "coverage": "OK",
+        "flags": []
+      },
+      "etf_pool": {
+        "type": "BASE TABLE",
+        "row_count": 5248,
+        "primary_key": [
+          "trade_date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(10)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(80)",
+            "key": ""
+          },
+          {
+            "name": "scene",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "selected",
+            "type": "char(1)",
+            "key": ""
+          },
+          {
+            "name": "pool_status",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "filter_reason",
+            "type": "varchar(60)",
+            "key": ""
+          },
+          {
+            "name": "total_score",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "score_fund",
+            "type": "decimal(5,1)",
+            "key": ""
+          },
+          {
+            "name": "score_tech",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "decimal(8,3)",
+            "key": ""
+          },
+          {
+            "name": "chg_5d",
+            "type": "decimal(8,3)",
+            "key": ""
+          },
+          {
+            "name": "chg_20d",
+            "type": "decimal(8,3)",
+            "key": ""
+          },
+          {
+            "name": "rsi",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "vol_annual",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "last_close",
+            "type": "decimal(10,4)",
+            "key": ""
+          },
+          {
+            "name": "ma20",
+            "type": "decimal(10,4)",
+            "key": ""
+          },
+          {
+            "name": "ma60",
+            "type": "decimal(10,4)",
+            "key": ""
+          },
+          {
+            "name": "mf_pct",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "super_pct",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "market_cap",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "decimal(8,3)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 2624,
+        "stock_col": "code",
+        "date_col": "trade_date",
+        "date_min": "2026-06-23",
+        "date_max": "2026-06-24",
+        "distinct_dates": 2,
+        "freshness_days": 2,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "fund_hold_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 2271,
+        "primary_key": [
+          "ts_code",
+          "quarter"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "fund_count",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "hold_shares",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "hold_mv",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "hold_change",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "hold_chg_num",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "hold_chg_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "quarter",
+            "type": "varchar(10)",
+            "key": "PRI"
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 2271,
+        "stock_col": "ts_code",
+        "date_col": "quarter",
+        "date_min": "2026Q1",
+        "date_max": "2026Q1",
+        "distinct_dates": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "fund_portfolio_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 433,
+        "primary_key": [
+          "fund_code",
+          "ts_code",
+          "quarter"
+        ],
+        "columns": [
+          {
+            "name": "fund_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "fund_name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "stock_name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "nav_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "hold_shares",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "hold_mv",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "quarter",
+            "type": "varchar(10)",
+            "key": "PRI"
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 387,
+        "stock_col": "ts_code",
+        "date_col": "quarter",
+        "date_min": "2026Q1",
+        "date_max": "2026Q1",
+        "distinct_dates": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "hk_hold_northbound_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 545094,
+        "primary_key": [
+          "trade_date",
+          "ts_code",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "vol",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "exchange",
+            "type": "varchar(10)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 373,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2016-06-29",
+        "date_max": "2026-03-31",
+        "distinct_dates": 1931,
+        "freshness_days": 87,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "holder_number_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 10,
+        "primary_key": [
+          "ts_code",
+          "end_date"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "ann_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "holder_num",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "change_num",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "change_ratio",
+            "type": "float",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 1,
+        "stock_col": "ts_code",
+        "date_col": "ann_date",
+        "date_min": "2024-04-03",
+        "date_max": "2026-04-17",
+        "distinct_dates": 7,
+        "freshness_days": 70,
+        "coverage": "SINGLE_STOCK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "hsgt_moneyflow_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 24,
+        "primary_key": [
+          "trade_date"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "hgt",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "sgt",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "north_money",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "south_money",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "ggt_ss",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "ggt_sz",
+            "type": "decimal(20,2)",
+            "key": ""
+          }
+        ],
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-22",
+        "distinct_dates": 24,
+        "freshness_days": 4,
+        "unit": "万元",
+        "unit_source": "Tushare moneyflow_hsgt; value scale sampled",
+        "coverage": "TINY",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "hsgt_top10_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 300,
+        "primary_key": [
+          "trade_date",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "change_amt",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "rank",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "market_type",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "net_amount",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "buy",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "sell",
+            "type": "decimal(24,2)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 48,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-28",
+        "date_max": "2026-06-17",
+        "distinct_dates": 15,
+        "freshness_days": 9,
+        "unit": "元",
+        "unit_source": "Tushare hsgt_top10 collector; amount fields",
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "institution_hold_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 605,
+        "primary_key": [
+          "ts_code",
+          "quarter"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "inst_count",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "inst_count_chg",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "hold_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "hold_ratio_chg",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "float_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "float_ratio_chg",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "quarter",
+            "type": "varchar(10)",
+            "key": "PRI"
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 605,
+        "stock_col": "ts_code",
+        "date_col": "quarter",
+        "date_min": "2026Q1",
+        "date_max": "2026Q1",
+        "distinct_dates": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "jgdy_institution_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 22640,
+        "primary_key": [
+          "code",
+          "visit_date",
+          "announce_date"
+        ],
+        "columns": [
+          {
+            "name": "code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "visit_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "announce_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pct_chg",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "institution_count",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "visit_mode",
+            "type": "varchar(200)",
+            "key": ""
+          },
+          {
+            "name": "visitor",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "visit_place",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "create_time",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "fetch_date",
+            "type": "date",
+            "key": "MUL"
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 4683,
+        "stock_col": "code",
+        "date_col": "visit_date",
+        "date_min": "2025-06-11",
+        "date_max": "2026-06-18",
+        "distinct_dates": 338,
+        "freshness_days": 8,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "kline_000": {
+        "type": "BASE TABLE",
+        "row_count": 248867,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 828,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_001": {
+        "type": "BASE TABLE",
+        "row_count": 60893,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 231,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_002": {
+        "type": "BASE TABLE",
+        "row_count": 552108,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 1844,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_003": {
+        "type": "BASE TABLE",
+        "row_count": 25154,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 84,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_300": {
+        "type": "BASE TABLE",
+        "row_count": 561246,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 939,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_301": {
+        "type": "BASE TABLE",
+        "row_count": 254320,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 460,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_302": {
+        "type": "BASE TABLE",
+        "row_count": 598,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 1,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "SINGLE_STOCK",
+        "flags": []
+      },
+      "kline_600": {
+        "type": "BASE TABLE",
+        "row_count": 450283,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 754,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_601": {
+        "type": "BASE TABLE",
+        "row_count": 133593,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 225,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_603": {
+        "type": "BASE TABLE",
+        "row_count": 354664,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 615,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_605": {
+        "type": "BASE TABLE",
+        "row_count": 67548,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 113,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_688": {
+        "type": "BASE TABLE",
+        "row_count": 349438,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 609,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "kline_689": {
+        "type": "BASE TABLE",
+        "row_count": 598,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 1,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "SINGLE_STOCK",
+        "flags": []
+      },
+      "kline_920": {
+        "type": "BASE TABLE",
+        "row_count": 15826,
+        "primary_key": [
+          "date",
+          "code"
+        ],
+        "columns": [
+          {
+            "name": "date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "internal": true,
+        "do_not_query": true,
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 316,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2026-04-01",
+        "date_max": "2026-06-25",
+        "distinct_dates": 57,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "margin_detail_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 56785,
+        "primary_key": [
+          "trade_date",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "rzye",
+            "type": "decimal(24,2)",
+            "key": "MUL"
+          },
+          {
+            "name": "rqye",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rzmre",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rqyl",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "rzche",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rqchl",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "rqmcl",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "rzrqye",
+            "type": "decimal(24,2)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 4371,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-06-01",
+        "date_max": "2026-06-17",
+        "distinct_dates": 13,
+        "freshness_days": 9,
+        "unit": "元",
+        "unit_source": "Tushare margin detail collector; amount fields",
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "margin_summary_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 39,
+        "primary_key": [
+          "trade_date",
+          "exchange_id"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "exchange_id",
+            "type": "varchar(10)",
+            "key": "PRI"
+          },
+          {
+            "name": "rzye",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rzmre",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rzche",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rqye",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rqmcl",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "rzrqye",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "rqyl",
+            "type": "bigint",
+            "key": ""
+          }
+        ],
+        "date_col": "trade_date",
+        "date_min": "2026-06-01",
+        "date_max": "2026-06-17",
+        "distinct_dates": 13,
+        "freshness_days": 9,
+        "unit": "元",
+        "unit_source": "Tushare margin summary collector; amount fields",
+        "coverage": "TINY",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "report_rc_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 2133,
+        "primary_key": [
+          "report_date",
+          "ts_code",
+          "quarter",
+          "org_name"
+        ],
+        "columns": [
+          {
+            "name": "report_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "quarter",
+            "type": "varchar(10)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "report_title",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "report_type",
+            "type": "varchar(50)",
+            "key": ""
+          },
+          {
+            "name": "classify",
+            "type": "varchar(50)",
+            "key": ""
+          },
+          {
+            "name": "org_name",
+            "type": "varchar(100)",
+            "key": "PRI"
+          },
+          {
+            "name": "author_name",
+            "type": "varchar(200)",
+            "key": ""
+          },
+          {
+            "name": "op_rt",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "op_pr",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "tp",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "np",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "eps",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pe",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "rd",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "roe",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "ev_ebitda",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "rating",
+            "type": "varchar(20)",
+            "key": "MUL"
+          },
+          {
+            "name": "max_price",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "min_price",
+            "type": "float",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 575,
+        "stock_col": "ts_code",
+        "date_col": "report_date",
+        "date_min": "2026-06-01",
+        "date_max": "2026-06-12",
+        "distinct_dates": 12,
+        "freshness_days": 14,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "southbound_hold_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 12217,
+        "primary_key": [
+          "trade_date",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "vol",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "exchange",
+            "type": "varchar(10)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 945,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-06-01",
+        "date_max": "2026-06-17",
+        "distinct_dates": 13,
+        "freshness_days": 9,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "stock_board_data": {
+        "type": "BASE TABLE",
+        "row_count": 5527,
+        "primary_key": [
+          "as_of_date",
+          "stock_code"
+        ],
+        "columns": [
+          {
+            "name": "as_of_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "stock_code",
+            "type": "varchar(10)",
+            "key": "PRI"
+          },
+          {
+            "name": "stock_name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "sw_l1",
+            "type": "varchar(255)",
+            "key": ""
+          },
+          {
+            "name": "sw_l2",
+            "type": "varchar(255)",
+            "key": ""
+          },
+          {
+            "name": "sw_l3",
+            "type": "varchar(255)",
+            "key": ""
+          },
+          {
+            "name": "ths_industry",
+            "type": "varchar(255)",
+            "key": ""
+          },
+          {
+            "name": "ths_concepts",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_region",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "created_at",
+            "type": "timestamp",
+            "key": ""
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "stock_code"
+        },
+        "distinct_stocks": 5527,
+        "stock_col": "stock_code",
+        "date_col": "as_of_date",
+        "date_min": "2026-05-26",
+        "date_max": "2026-05-26",
+        "distinct_dates": 1,
+        "freshness_days": 31,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "stock_moneyflow_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 9622,
+        "primary_key": [
+          "trade_date",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "buy_sm_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "sell_sm_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "sell_sm_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_md_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "buy_md_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "sell_md_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "sell_md_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "sell_lg_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "sell_lg_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "sell_elg_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "sell_elg_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "net_mf_vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "net_mf_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 5188,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-06-12",
+        "date_max": "2026-06-17",
+        "distinct_dates": 2,
+        "freshness_days": 9,
+        "unit": "万元",
+        "unit_source": "Tushare moneyflow; value scale sampled",
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "stock_news_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 11274,
+        "primary_key": [
+          "news_link"
+        ],
+        "columns": [
+          {
+            "name": "news_link",
+            "type": "varchar(500)",
+            "key": "PRI"
+          },
+          {
+            "name": "code",
+            "type": "varchar(20)",
+            "key": "MUL"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "news_title",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "news_content",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "publish_time",
+            "type": "datetime",
+            "key": ""
+          },
+          {
+            "name": "source",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "create_time",
+            "type": "date",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 2258,
+        "stock_col": "code",
+        "date_col": "publish_time",
+        "date_min": "2025-12-11 13:14:10",
+        "date_max": "2026-06-11 01:13:10",
+        "distinct_dates": 9206,
+        "freshness_days": 15,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "stock_pool_base": {
+        "type": "BASE TABLE",
+        "row_count": 2667,
+        "primary_key": [
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "symbol",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "industry",
+            "type": "varchar(100)",
+            "key": "MUL"
+          },
+          {
+            "name": "market",
+            "type": "varchar(20)",
+            "key": "MUL"
+          },
+          {
+            "name": "exchange",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "list_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "total_mv",
+            "type": "decimal(20,2)",
+            "key": "MUL"
+          },
+          {
+            "name": "total_mv_yi",
+            "type": "decimal(10,1)",
+            "key": ""
+          },
+          {
+            "name": "circ_mv",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "pe",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pb",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "update_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "pool_tier",
+            "type": "varchar(10)",
+            "key": "MUL"
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 2667,
+        "stock_col": "ts_code",
+        "date_col": "list_date",
+        "date_min": "1990-12-19",
+        "date_max": "2025-12-24",
+        "distinct_dates": 1906,
+        "freshness_col": "update_date",
+        "freshness_min": "2026-06-24",
+        "freshness_max": "2026-06-24",
+        "freshness_days": 2,
+        "coverage": "OK",
+        "flags": []
+      },
+      "stock_rating_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 3,
+        "primary_key": [
+          "ts_code",
+          "report_date",
+          "org_name"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "report_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "org_name",
+            "type": "varchar(100)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "report_title",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "rating",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "target_price",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "analyst",
+            "type": "varchar(200)",
+            "key": ""
+          },
+          {
+            "name": "industry",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "research_report_num",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "eps_2026",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pe_2026",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "eps_2027",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pe_2027",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "eps_2028",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pe_2028",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "report_url",
+            "type": "varchar(500)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 1,
+        "stock_col": "ts_code",
+        "date_col": "report_date",
+        "date_min": "2025-03-16",
+        "date_max": "2025-03-18",
+        "distinct_dates": 2,
+        "freshness_days": 465,
+        "coverage": "SINGLE_STOCK",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "ths_board_member": {
+        "type": "BASE TABLE",
+        "row_count": 631814,
+        "primary_key": [
+          "trade_date",
+          "board_type",
+          "ts_code",
+          "con_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "board_type",
+            "type": "varchar(2)",
+            "key": "PRI"
+          },
+          {
+            "name": "board_type_name",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "con_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "board_name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "con_name",
+            "type": "varchar(100)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "board_col": "ts_code",
+          "stock_col": "con_code"
+        },
+        "distinct_boards": 1517,
+        "board_col": "ts_code",
+        "distinct_stocks": 14450,
+        "stock_col": "con_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-19",
+        "date_max": "2026-05-26",
+        "distinct_dates": 2,
+        "freshness_days": 31,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "ths_daily_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 31013,
+        "primary_key": [
+          "trade_date",
+          "ts_code",
+          "type"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "count",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "exchange",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "board_type",
+            "type": "varchar(2)",
+            "key": ""
+          },
+          {
+            "name": "board_type_name",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "list_date",
+            "type": "varchar(8)",
+            "key": ""
+          },
+          {
+            "name": "type",
+            "type": "varchar(4)",
+            "key": "PRI"
+          },
+          {
+            "name": "open",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pre_close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "avg_price",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "vol",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "turnover_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "total_mv",
+            "type": "decimal(24,2)",
+            "key": ""
+          },
+          {
+            "name": "float_mv",
+            "type": "decimal(24,2)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "board_col": "ts_code"
+        },
+        "distinct_boards": 1510,
+        "board_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-18",
+        "distinct_dates": 25,
+        "freshness_days": 8,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "ths_moneyflow_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 13763,
+        "primary_key": [
+          "trade_date",
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "board_type",
+            "type": "varchar(2)",
+            "key": ""
+          },
+          {
+            "name": "board_type_name",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "company_num",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "pct_change_stock",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "lead_stock",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "net_buy_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "net_sell_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "net_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "board_col": "ts_code"
+        },
+        "distinct_boards": 477,
+        "board_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-25",
+        "distinct_dates": 29,
+        "freshness_days": 1,
+        "unit": "元",
+        "unit_source": "Tushare ths_moneyflow collector; value scale sampled",
+        "coverage": "OK",
+        "flags": []
+      },
+      "tmp_pool_mv": {
+        "type": "BASE TABLE",
+        "row_count": 0,
+        "primary_key": [
+          "ts_code"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "total_mv",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "circ_mv",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "pe",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pb",
+            "type": "float",
+            "key": ""
+          }
+        ],
+        "coverage": "TINY",
+        "flags": []
+      },
+      "top10_floatholders_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 10,
+        "primary_key": [
+          "ts_code",
+          "end_date",
+          "holder_name"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "holder_name",
+            "type": "varchar(200)",
+            "key": "PRI"
+          },
+          {
+            "name": "hold_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "hold_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "hold_change",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "rank",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "ann_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "holder_type",
+            "type": "varchar(50)",
+            "key": ""
+          },
+          {
+            "name": "hold_float_ratio",
+            "type": "float",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 1,
+        "stock_col": "ts_code",
+        "date_col": "end_date",
+        "date_min": "2026-03-31",
+        "date_max": "2026-03-31",
+        "distinct_dates": 1,
+        "freshness_days": 87,
+        "coverage": "SINGLE_STOCK",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "top10_holders_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 28,
+        "primary_key": [
+          "ts_code",
+          "end_date",
+          "holder_name"
+        ],
+        "columns": [
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "holder_name",
+            "type": "varchar(200)",
+            "key": "PRI"
+          },
+          {
+            "name": "hold_amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "hold_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "hold_change",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "rank",
+            "type": "int",
+            "key": ""
+          },
+          {
+            "name": "ann_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "holder_type",
+            "type": "varchar(50)",
+            "key": ""
+          },
+          {
+            "name": "hold_float_ratio",
+            "type": "float",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 10,
+        "stock_col": "ts_code",
+        "date_col": "end_date",
+        "date_min": "2026-03-31",
+        "date_max": "2026-03-31",
+        "distinct_dates": 1,
+        "freshness_days": 87,
+        "coverage": "TINY",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "top_inst_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 16577,
+        "primary_key": [
+          "id"
+        ],
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "key": "PRI"
+          },
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "MUL"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "MUL"
+          },
+          {
+            "name": "exalter",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "side",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "buy",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "buy_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "sell",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "sell_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "net_buy",
+            "type": "decimal(20,2)",
+            "key": "MUL"
+          },
+          {
+            "name": "reason",
+            "type": "varchar(500)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 717,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-28",
+        "date_max": "2026-06-22",
+        "distinct_dates": 16,
+        "freshness_days": 4,
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "top_list_snapshot": {
+        "type": "BASE TABLE",
+        "row_count": 1559,
+        "primary_key": [
+          "trade_date",
+          "ts_code",
+          "seq_id"
+        ],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(50)",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "turnover_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "l_sell",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "l_buy",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "l_amount",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "net_amount",
+            "type": "decimal(20,2)",
+            "key": "MUL"
+          },
+          {
+            "name": "net_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "amount_rate",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "float_values",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "reason",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "seq_id",
+            "type": "bigint",
+            "key": "PRI"
+          }
+        ],
+        "dimensions": {
+          "stock_col": "ts_code"
+        },
+        "distinct_stocks": 717,
+        "stock_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-28",
+        "date_max": "2026-06-22",
+        "distinct_dates": 16,
+        "freshness_days": 4,
+        "unit": "元",
+        "unit_source": "Tushare top_list collector; amount fields",
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "v_board_moneyflow_dc_yi": {
+        "type": "VIEW",
+        "row_count": 28987,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "content_type",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "rank",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "net_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "buy_md_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "buy_sm_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "net_amount_rate",
+            "type": "float",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "board_col": "ts_code"
+        },
+        "distinct_boards": 1021,
+        "board_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-25",
+        "distinct_dates": 29,
+        "freshness_days": 1,
+        "unit": "亿元",
+        "unit_source": "semantic view normalized from dc_moneyflow_snapshot",
+        "coverage": "OK",
+        "flags": []
+      },
+      "v_board_moneyflow_ths_yi": {
+        "type": "VIEW",
+        "row_count": 13763,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "board_type",
+            "type": "varchar(2)",
+            "key": ""
+          },
+          {
+            "name": "board_type_name",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "pct_change",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "company_num",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "pct_change_stock",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "lead_stock",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "net_buy_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "net_sell_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "net_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "board_col": "ts_code"
+        },
+        "distinct_boards": 477,
+        "board_col": "ts_code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-25",
+        "distinct_dates": 29,
+        "freshness_days": 1,
+        "unit": "亿元",
+        "unit_source": "semantic view normalized from ths_moneyflow_snapshot",
+        "coverage": "OK",
+        "flags": []
+      },
+      "v_kline": {
+        "type": "VIEW",
+        "row_count": 3075136,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "src_table",
+            "type": "varchar(9)",
+            "key": ""
+          },
+          {
+            "name": "date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "varchar(64)",
+            "key": ""
+          },
+          {
+            "name": "open",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "high",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "low",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "volume",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 7020,
+        "stock_col": "code",
+        "date_col": "date",
+        "date_min": "2024-01-02",
+        "date_max": "2026-06-25",
+        "distinct_dates": 598,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": []
+      },
+      "v_stock_moneyflow_yi": {
+        "type": "VIEW",
+        "row_count": 9622,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": ""
+          },
+          {
+            "name": "net_mf_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "main_net_yi",
+            "type": "decimal(27,6)",
+            "key": ""
+          },
+          {
+            "name": "small_net_yi",
+            "type": "decimal(25,6)",
+            "key": ""
+          },
+          {
+            "name": "buy_lg_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "sell_lg_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "buy_elg_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          },
+          {
+            "name": "sell_elg_yi",
+            "type": "decimal(24,6)",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 5188,
+        "stock_col": "code",
+        "date_col": "trade_date",
+        "date_min": "2026-06-12",
+        "date_max": "2026-06-17",
+        "distinct_dates": 2,
+        "freshness_days": 9,
+        "unit": "亿元",
+        "unit_source": "semantic view normalized from stock_moneyflow_snapshot",
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY",
+          "STALE_CURRENT"
+        ]
+      },
+      "v_strategy_selection_latest": {
+        "type": "VIEW",
+        "row_count": 348,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "code",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "market",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "sw_l1",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "sw_l2",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "sw_l3",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_industry",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_region",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "ths_concepts",
+            "type": "text",
+            "key": ""
+          },
+          {
+            "name": "mktcap",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pe",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pb",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "selection_date",
+            "type": "datetime",
+            "key": ""
+          },
+          {
+            "name": "is_b2_pullback_strategy",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "is_bbi_kdj_strategy",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "is_brick_chart_strategy",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "is_bbi_short_long_strategy",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "violent_k_count",
+            "type": "bigint",
+            "key": ""
+          },
+          {
+            "name": "violent_k_date",
+            "type": "datetime",
+            "key": ""
+          },
+          {
+            "name": "violent_k_pct_chg",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_vol_ratio",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_prev_j",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "violent_k_curr_j",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "close",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "pctChg",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "bbi",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "K",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "D",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "J",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "turnover",
+            "type": "double",
+            "key": ""
+          },
+          {
+            "name": "amount",
+            "type": "double",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 87,
+        "stock_col": "code",
+        "date_col": "selection_date",
+        "date_min": "2026-06-25 00:00:00",
+        "date_max": "2026-06-25 00:00:00",
+        "distinct_dates": 1,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      },
+      "v_top_inst_net_yi": {
+        "type": "VIEW",
+        "row_count": 1434,
+        "primary_key": [],
+        "columns": [
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": ""
+          },
+          {
+            "name": "ts_code",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "code",
+            "type": "varchar(6)",
+            "key": ""
+          },
+          {
+            "name": "buy_yi",
+            "type": "decimal(46,6)",
+            "key": ""
+          },
+          {
+            "name": "sell_yi",
+            "type": "decimal(46,6)",
+            "key": ""
+          },
+          {
+            "name": "net_buy_yi",
+            "type": "decimal(46,6)",
+            "key": ""
+          },
+          {
+            "name": "seat_count",
+            "type": "bigint",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 717,
+        "stock_col": "code",
+        "date_col": "trade_date",
+        "date_min": "2026-05-28",
+        "date_max": "2026-06-22",
+        "distinct_dates": 16,
+        "freshness_days": 4,
+        "unit": "亿元",
+        "unit_source": "semantic view normalized from top_inst_snapshot",
+        "coverage": "OK",
+        "flags": [
+          "STALE_CURRENT"
+        ]
+      },
+      "violent_k_signals": {
+        "type": "BASE TABLE",
+        "row_count": 1203,
+        "primary_key": [
+          "code",
+          "trade_date",
+          "violent_k_date"
+        ],
+        "columns": [
+          {
+            "name": "code",
+            "type": "varchar(20)",
+            "key": "PRI"
+          },
+          {
+            "name": "name",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "violent_k_date",
+            "type": "date",
+            "key": "PRI"
+          },
+          {
+            "name": "violent_k_pct_chg",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "violent_k_vol",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "violent_k_vol_ratio",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "violent_k_prev_j",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "violent_k_curr_j",
+            "type": "float",
+            "key": ""
+          },
+          {
+            "name": "industry",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "mktcap",
+            "type": "decimal(20,2)",
+            "key": ""
+          },
+          {
+            "name": "ak_industry",
+            "type": "varchar(100)",
+            "key": ""
+          },
+          {
+            "name": "ak_concept",
+            "type": "varchar(500)",
+            "key": ""
+          },
+          {
+            "name": "update_time",
+            "type": "datetime",
+            "key": ""
+          }
+        ],
+        "dimensions": {
+          "stock_col": "code"
+        },
+        "distinct_stocks": 1091,
+        "stock_col": "code",
+        "date_col": "trade_date",
+        "date_min": "2026-06-25",
+        "date_max": "2026-06-25",
+        "distinct_dates": 1,
+        "freshness_days": 1,
+        "coverage": "OK",
+        "flags": [
+          "SHORT_HISTORY"
+        ]
+      }
+    },
+    "finance": {
+      "sentiment_index": {
+        "type": "BASE TABLE",
+        "row_count": 22,
+        "primary_key": [
+          "id"
+        ],
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint unsigned",
+            "key": "PRI"
+          },
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "MUL"
+          },
+          {
+            "name": "run_at",
+            "type": "datetime",
+            "key": ""
+          },
+          {
+            "name": "total_score",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "sentiment_tag",
+            "type": "varchar(20)",
+            "key": ""
+          },
+          {
+            "name": "score_updown",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "score_ztdt",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "score_turnover",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "score_mainflow",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "score_hsgt",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "score_nlp",
+            "type": "decimal(6,2)",
+            "key": ""
+          },
+          {
+            "name": "raw_up_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_down_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_flat_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_zt_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_dt_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_turnover_avg",
+            "type": "decimal(8,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_turnover_med",
+            "type": "decimal(8,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_main_net",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_elg_net",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_lg_net",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_md_net",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_sm_net",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_hsgt_net",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_nlp_norm",
+            "type": "decimal(8,2)",
+            "key": ""
+          },
+          {
+            "name": "nlp_version",
+            "type": "varchar(10)",
+            "key": ""
+          },
+          {
+            "name": "nlp_bull_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "nlp_bear_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "nlp_neutral_cnt",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "nlp_total",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_sse_yy",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_sse_yy_y",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_sz_yy",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_sz_yy_y",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_total",
+            "type": "decimal(20,4)",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_sz_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_sse_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "raw_margin_rzye_pct",
+            "type": "decimal(8,4)",
+            "key": ""
+          }
+        ],
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-25",
+        "distinct_dates": 21,
+        "freshness_days": 1,
+        "coverage": "TINY",
+        "flags": []
+      },
+      "sentiment_nlp_source": {
+        "type": "BASE TABLE",
+        "row_count": 66,
+        "primary_key": [
+          "id"
+        ],
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint unsigned",
+            "key": "PRI"
+          },
+          {
+            "name": "trade_date",
+            "type": "date",
+            "key": "MUL"
+          },
+          {
+            "name": "run_at",
+            "type": "datetime",
+            "key": ""
+          },
+          {
+            "name": "source",
+            "type": "varchar(30)",
+            "key": ""
+          },
+          {
+            "name": "collected",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "analyzed",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "avg_score",
+            "type": "decimal(8,4)",
+            "key": ""
+          },
+          {
+            "name": "bull_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "bear_count",
+            "type": "int unsigned",
+            "key": ""
+          },
+          {
+            "name": "neutral_cnt",
+            "type": "int unsigned",
+            "key": ""
+          }
+        ],
+        "date_col": "trade_date",
+        "date_min": "2026-05-15",
+        "date_max": "2026-06-25",
+        "distinct_dates": 20,
+        "freshness_days": 1,
+        "coverage": "TINY",
+        "flags": []
+      }
+    }
+  }
+}
