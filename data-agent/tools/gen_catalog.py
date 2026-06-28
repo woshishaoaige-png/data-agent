@@ -25,12 +25,13 @@ import json
 import sys
 from pathlib import Path
 
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 
 sys.path.insert(0, str(Path(__file__).parent))
 from db import get_engine  # noqa: E402
+from config import get_active_datasource  # noqa: E402
+from dialects import get_dialect  # noqa: E402
 
-SCHEMAS = ["Stock", "finance"]
 OUTPUT = Path(__file__).resolve().parents[1] / "catalog.json"
 
 # 股票维度列识别（自动兜底；特殊表用 DIMENSION_OVERRIDES）
@@ -126,34 +127,40 @@ def _is_internal_table(table):
     return any(table.startswith(prefix) for prefix in INTERNAL_TABLE_PREFIXES)
 
 
-def _distinct_count(conn, fq, col):
-    return conn.execute(text(f"SELECT COUNT(DISTINCT `{col}`) FROM {fq}")).scalar()
+def _distinct_count(conn, dialect, schema, table, col):
+    fq = dialect.fq_table(schema, table)
+    q = f"SELECT COUNT(DISTINCT {dialect.quote_ident(col)}) FROM {fq}"
+    return conn.execute(text(q)).scalar()
 
 
-def _date_bounds(conn, fq, col):
-    return conn.execute(text(f"SELECT MIN(`{col}`), MAX(`{col}`) FROM {fq}")).fetchone()
+def _date_bounds(conn, dialect, schema, table, col):
+    fq = dialect.fq_table(schema, table)
+    qc = dialect.quote_ident(col)
+    q = f"SELECT MIN({qc}), MAX({qc}) FROM {fq}"
+    return conn.execute(text(q)).fetchone()
 
 
-def _freshness_days(conn, fq, col):
-    return conn.execute(
-        text(f"SELECT DATEDIFF(CURDATE(), DATE(MAX(`{col}`))) FROM {fq}")
-    ).scalar()
+def _freshness_days(conn, dialect, schema, table, col):
+    fq = dialect.fq_table(schema, table)
+    q = f"SELECT {dialect.datediff_today_sql(col)} FROM {fq}"
+    return conn.execute(text(q)).scalar()
 
 
-def introspect_table(conn, schema, table, table_type):
-    # 列 + 主键
-    col_rows = conn.execute(text("""
-        SELECT COLUMN_NAME, COLUMN_TYPE, COLUMN_KEY
-        FROM information_schema.COLUMNS
-        WHERE TABLE_SCHEMA = :s AND TABLE_NAME = :t
-        ORDER BY ORDINAL_POSITION
-    """), {"s": schema, "t": table}).fetchall()
-
-    columns = [{"name": r[0], "type": r[1], "key": r[2]} for r in col_rows]
+def introspect_table(conn, inspector, dialect, schema, table, table_type):
+    # 列 + 主键（SQLAlchemy 反射，跨方言统一）
+    raw_cols = inspector.get_columns(table, schema=schema)
+    columns = [{"name": c["name"], "type": str(c["type"]), "key": ""} for c in raw_cols]
     col_names = [c["name"] for c in columns]
-    primary_key = [r[0] for r in col_rows if r[2] == "PRI"]
+    try:
+        pk = inspector.get_pk_constraint(table, schema=schema)
+        primary_key = pk.get("constrained_columns", []) or []
+    except Exception:
+        primary_key = []
+    for c in columns:
+        if c["name"] in primary_key:
+            c["key"] = "PRI"
 
-    fq = f"`{schema}`.`{table}`"
+    fq = dialect.fq_table(schema, table)
     row_count = conn.execute(text(f"SELECT COUNT(*) FROM {fq}")).scalar()
 
     info = {
@@ -166,7 +173,6 @@ def introspect_table(conn, schema, table, table_type):
         info["internal"] = True
         info["do_not_query"] = True
 
-    # 维度：表级覆盖优先，避免把板块 key 当成股票 key。
     dimensions = DIMENSION_OVERRIDES.get(table, {}).copy()
     if "stock_col" not in dimensions and "board_col" not in dimensions:
         stock_col = _first_present(STOCK_COLS, col_names)
@@ -180,19 +186,17 @@ def introspect_table(conn, schema, table, table_type):
         if dim_col not in col_names or not row_count:
             continue
         count_key = "distinct_" + dim_name.removesuffix("_col") + "s"
-        distinct_entities = _distinct_count(conn, fq, dim_col)
+        distinct_entities = _distinct_count(conn, dialect, schema, table, dim_col)
         info["dimensions"][dim_name] = dim_col
         info[count_key] = int(distinct_entities)
         if dim_name == "stock_col":
             distinct_stocks = distinct_entities
-            # Backward-compatible aliases for existing simple gates.
             info["stock_col"] = dim_col
             info["distinct_stocks"] = int(distinct_stocks)
         elif dim_name == "board_col":
             info["board_col"] = dim_col
             info["distinct_boards"] = int(distinct_entities)
 
-    # 日期维度
     date_override = DATE_OVERRIDES.get(table)
     if date_override:
         date_col = date_override["date_col"]
@@ -206,27 +210,25 @@ def introspect_table(conn, schema, table, table_type):
     freshness_days = None
     if date_col and row_count:
         info["date_col"] = date_col
-        dmin, dmax = _date_bounds(conn, fq, date_col)
+        dmin, dmax = _date_bounds(conn, dialect, schema, table, date_col)
         info["date_min"] = str(dmin)
         info["date_max"] = str(dmax)
-        distinct_dates = _distinct_count(conn, fq, date_col)
+        distinct_dates = _distinct_count(conn, dialect, schema, table, date_col)
         info["distinct_dates"] = int(distinct_dates)
     if freshness_col and row_count and freshness_col in col_names and is_real_date:
         if freshness_col != date_col:
             info["freshness_col"] = freshness_col
-            fmin, fmax = _date_bounds(conn, fq, freshness_col)
+            fmin, fmax = _date_bounds(conn, dialect, schema, table, freshness_col)
             info["freshness_min"] = str(fmin)
             info["freshness_max"] = str(fmax)
-        freshness_days = _freshness_days(conn, fq, freshness_col)
+        freshness_days = _freshness_days(conn, dialect, schema, table, freshness_col)
         if freshness_days is not None:
             info["freshness_days"] = int(freshness_days)
 
-    # 单位（业务知识，从人工映射注入）
     if table in UNIT_MAP:
         info["unit"] = UNIT_MAP[table]
         info["unit_source"] = UNIT_SOURCE.get(table, "manual mapping")
 
-    # coverage 主档（G3）：横截面能力
     if distinct_stocks == 1:
         info["coverage"] = "SINGLE_STOCK"
     elif row_count < TINY_ROW_THRESHOLD:
@@ -234,7 +236,6 @@ def introspect_table(conn, schema, table, table_type):
     else:
         info["coverage"] = "OK"
 
-    # flags 多标签：时序 / 新鲜度能力（可叠加）
     flags = []
     if distinct_dates is not None and distinct_dates < SHORT_HISTORY_DAYS:
         flags.append("SHORT_HISTORY")
@@ -265,20 +266,24 @@ def main():
         "schemas": {},
     }
 
-    engine = get_engine()
-    with engine.connect() as conn:
-        for schema in SCHEMAS:
-            tbls = conn.execute(text("""
-                SELECT TABLE_NAME, TABLE_TYPE
-                FROM information_schema.TABLES
-                WHERE TABLE_SCHEMA = :s
-                ORDER BY TABLE_NAME
-            """), {"s": schema}).fetchall()
+    _, ds = get_active_datasource()
+    schemas = ds["schemas"]
+    dialect = get_dialect(ds["engine"])
 
+    engine = get_engine()
+    inspector = inspect(engine)
+    with engine.connect() as conn:
+        for schema in schemas:
+            table_names = inspector.get_table_names(schema=schema)
+            view_names = inspector.get_view_names(schema=schema)
             schema_entry = {}
-            for table_name, table_type in tbls:
+            for table_name in sorted(table_names):
                 schema_entry[table_name] = introspect_table(
-                    conn, schema, table_name, table_type
+                    conn, inspector, dialect, schema, table_name, "BASE TABLE"
+                )
+            for view_name in sorted(view_names):
+                schema_entry[view_name] = introspect_table(
+                    conn, inspector, dialect, schema, view_name, "VIEW"
                 )
             catalog["schemas"][schema] = schema_entry
 

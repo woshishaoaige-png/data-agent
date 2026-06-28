@@ -78,3 +78,23 @@ $PY data-agent/tools/check_all.py
 
 - `hsgt_moneyflow_snapshot` / `stock_moneyflow_snapshot`：万元
 - `dc_moneyflow_snapshot` / `dc_moneyflow_mkt_snapshot` / `ths_moneyflow_snapshot`：元
+
+## 多数据库配置
+
+data-agent 的连接与自省支持 MySQL / PostgreSQL / Hive，通过 `databases.yaml` 配置。
+
+1. 复制模板：`cp databases.example.yaml databases.yaml`
+2. 填写数据源；密码用 `${ENV_VAR}` 引用环境变量，不要写明文。
+3. 设置激活源：yaml 的 `active` 字段，或环境变量 `DATA_AGENT_DATASOURCE`。
+4. 导出密码后生成 catalog：
+
+   ```bash
+   export MYSQL_PWD=...           # 对应 yaml 里的 ${MYSQL_PWD}
+   python tools/gen_catalog.py
+   ```
+
+说明：
+- MySQL 的 `schemas` 是 database 名列表；PostgreSQL 需额外 `database` 字段，`schemas` 指 PG schema。
+- `psycopg2` / `PyHive` 仅在用对应引擎时安装。
+- 视图 `sql/create_views.sql` 与单位/维度业务知识是 A 股数据集特定的，换库时需相应调整。
+- `DATA_AGENT_DB_URL` 可整体覆盖连接串。
