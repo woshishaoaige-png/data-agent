@@ -1,0 +1,30 @@
+# data-agent 多数据源配置模板。
+# 复制为 databases.yaml 并填写真实值；密码用 ${ENV_VAR} 形式走环境变量，不要写明文。
+active: local_mysql                 # 可被环境变量 DATA_AGENT_DATASOURCE 覆盖
+
+datasources:
+  local_mysql:
+    engine: mysql                   # mysql | postgresql | hive
+    driver: mysqlconnector
+    host: 127.0.0.1
+    port: 3306
+    user: root
+    password: ${MYSQL_PWD}
+    schemas: [Stock, finance]       # MySQL: database 名列表
+
+  warehouse_pg:
+    engine: postgresql
+    driver: psycopg2
+    host: pg.internal
+    port: 5432
+    user: analyst
+    password: ${PG_PWD}
+    database: analytics             # PG 是 database>schema 两层
+    schemas: [public, finance]
+
+  lake_hive:
+    engine: hive
+    driver: hive
+    host: hive.internal
+    port: 10000
+    schemas: [default]
