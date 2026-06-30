@@ -16,22 +16,22 @@ what the data says, not buy/sell advice.
 
 ## Connection
 
-Use `data-agent/tools/db.py` as the only connection entry. It defaults to
+Use `tools/db.py` as the only connection entry. It defaults to
 `Stock` and supports fully qualified cross-schema queries such as
 `finance.sentiment_index`.
 
 ## Mandatory Workflow
 
-1. Read `data-agent/catalog.json` for every table you plan to use.
-2. Read the smallest relevant reference file under `data-agent/references/`.
+1. Read `catalog.json` for every table you plan to use.
+2. Read the smallest relevant reference file under `references/`.
 3. Prefer semantic `v_*` views when they exist, especially normalized `_yi` money views.
-4. Run SQL through `data-agent/tools/query_guard.py` or apply the same policy before trusting it.
+4. Run SQL through `tools/query_guard.py` or apply the same policy before trusting it.
 5. Write SQL only after checking coverage, flags, date range, units, and join keys.
-6. For unfamiliar or newly changed tables, profile actual values with `data-agent/tools/profile_table.py`.
+6. For unfamiliar or newly changed tables, profile actual values with `tools/profile_table.py`.
 7. For correlation, regression, standard deviation, rolling, cumulative, or ranking windows, read `references/statistical_sql.md` and/or `references/window_frames.md` before writing SQL.
-8. Run the query, then validate row counts, sample checks, and result shape with `data-agent/tools/validate_result.py` before answering.
-9. When the user asks for a chart or dashboard, validate the analysis first, then create a self-contained HTML view with `data-agent/tools/build_dashboard.py`.
-10. When a new domain, metric definition, or recurring gotcha is discovered, draft context with `data-agent/tools/context_extractor.py`; review before promoting it into `references/` or evals.
+8. Run the query, then validate row counts, sample checks, and result shape with `tools/validate_result.py` before answering.
+9. When the user asks for a chart or dashboard, validate the analysis first, then create a self-contained HTML view with `tools/build_dashboard.py`.
+10. When a new domain, metric definition, or recurring gotcha is discovered, draft context with `tools/context_extractor.py`; review before promoting it into `references/` or evals.
 
 ## P0 Rules
 

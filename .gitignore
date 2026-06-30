@@ -1,0 +1,8 @@
+.DS_Store
+.pytest_cache/
+__pycache__/
+*.pyc
+databases.yaml
+Cursor_PRO/
+ai-data-analyst/
+gemini-web2api/

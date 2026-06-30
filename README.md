@@ -5,7 +5,6 @@
 ## 目录
 
 ```
-data-agent/
 ├── catalog.json          ← 【真相源】自动生成，描述全部表的结构/行数/覆盖度，勿手改
 ├── SKILL.md              ← Agent 硬规则：先 catalog，再 reference，再 SQL
 ├── evals/                ← 25 题行为评测集
@@ -50,16 +49,16 @@ data-agent/
 PY=/Users/weini/.hermes/venv/bin/python3
 
 # 改了表结构 → 重建视图（如新增 kline 分片）
-mysql -uroot -p******* < data-agent/sql/create_views.sql
+mysql -uroot -p******* < sql/create_views.sql
 
 # 任何加表/数据变化后 → 刷新 catalog
-$PY data-agent/tools/gen_catalog.py
+$PY tools/gen_catalog.py
 
 # 快速检查：catalog 机制 + reference 漂移风险
-$PY data-agent/tools/lint_references.py
-$PY data-agent/tools/smoke_eval.py
-$PY data-agent/tools/run_eval_cases.py
-$PY data-agent/tools/check_all.py
+$PY tools/lint_references.py
+$PY tools/smoke_eval.py
+$PY tools/run_eval_cases.py
+$PY tools/check_all.py
 ```
 
 > 建议把 `gen_catalog.py` 加到 `run_board_collectors.sh` 收尾，实现"加数据即刷新"。
@@ -108,7 +107,7 @@ data-agent 的连接与自省支持 MySQL / PostgreSQL / Hive，通过 `database
 ### 1. 执行前护栏
 
 ```bash
-$PY data-agent/tools/query_guard.py \
+$PY tools/query_guard.py \
   --intent "最新行业板块涨幅 Top5" \
   --sql "SELECT ... FROM Stock.ths_daily_snapshot ..."
 ```
@@ -116,7 +115,7 @@ $PY data-agent/tools/query_guard.py \
 ### 2. 执行后结果验证
 
 ```bash
-$PY data-agent/tools/validate_result.py \
+$PY tools/validate_result.py \
   --intent "最近半年板块资金流趋势" \
   --sql "SELECT trade_date, net_yi FROM Stock.v_board_moneyflow_ths_yi ..."
 ```
@@ -128,7 +127,7 @@ $PY data-agent/tools/validate_result.py \
 ### 3. 新表/陌生表画像
 
 ```bash
-$PY data-agent/tools/profile_table.py --table Stock.stock_moneyflow_snapshot --limit 5000
+$PY tools/profile_table.py --table Stock.stock_moneyflow_snapshot --limit 5000
 ```
 
 用于补充 `catalog.json` 没表达的真实值分布：空值率、distinct、top values、日期范围、数值范围、重复自然 key。
@@ -136,7 +135,7 @@ $PY data-agent/tools/profile_table.py --table Stock.stock_moneyflow_snapshot --l
 ### 4. 可视化 / Dashboard
 
 ```bash
-$PY data-agent/tools/build_dashboard.py \
+$PY tools/build_dashboard.py \
   --title "板块资金流 Dashboard" \
   --sql "SELECT trade_date, name, net_yi FROM Stock.v_board_moneyflow_ths_yi ..." \
   --out /tmp/board_moneyflow_dashboard.html
@@ -147,7 +146,7 @@ $PY data-agent/tools/build_dashboard.py \
 ### 5. 新业务域上下文草稿
 
 ```bash
-$PY data-agent/tools/context_extractor.py \
+$PY tools/context_extractor.py \
   --domain moneyflow \
   --pattern moneyflow \
   --out-dir /tmp/data-agent-context

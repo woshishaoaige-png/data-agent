@@ -165,7 +165,7 @@ Expected: PASS（9 passed）
 - [ ] **Step 5: 提交**
 
 ```bash
-git -C /Users/weini/Documents/agent_flow/PROJECTS add data-agent/tools/dialects.py data-agent/tests/test_dialects.py
+git -C /Users/weini/Documents/agent_flow/PROJECTS add tools/dialects.py tests/test_dialects.py
 git -C /Users/weini/Documents/agent_flow/PROJECTS commit -m "feat: add cross-dialect adapter for data-agent introspection"
 ```
 
@@ -353,7 +353,7 @@ Expected: PASS（4 passed）
 - [ ] **Step 6: 提交**
 
 ```bash
-git -C /Users/weini/Documents/agent_flow/PROJECTS add data-agent/tools/config.py data-agent/databases.example.yaml data-agent/tests/test_config.py
+git -C /Users/weini/Documents/agent_flow/PROJECTS add tools/config.py databases.example.yaml tests/test_config.py
 git -C /Users/weini/Documents/agent_flow/PROJECTS commit -m "feat: add yaml datasource config with env interpolation"
 ```
 
@@ -468,8 +468,8 @@ Expected: PASS（3 passed）
 - [ ] **Step 5: 准备真实 databases.yaml 并实跑连接自检**
 
 ```bash
-cp /Users/weini/Documents/agent_flow/PROJECTS/data-agent/databases.example.yaml \
-   /Users/weini/Documents/agent_flow/PROJECTS/data-agent/databases.yaml
+cp /Users/weini/Documents/agent_flow/PROJECTS/databases.example.yaml \
+   /Users/weini/Documents/agent_flow/PROJECTS/databases.yaml
 export MYSQL_PWD=12345678
 cd /Users/weini/Documents/agent_flow/PROJECTS/data-agent && /Users/weini/.venvs/dev/bin/python tools/db.py
 ```
@@ -478,7 +478,7 @@ Expected: `data-agent DB OK: 1`
 - [ ] **Step 6: 提交（不含真实 databases.yaml）**
 
 ```bash
-git -C /Users/weini/Documents/agent_flow/PROJECTS add data-agent/tools/db.py data-agent/tests/test_db.py
+git -C /Users/weini/Documents/agent_flow/PROJECTS add tools/db.py tests/test_db.py
 git -C /Users/weini/Documents/agent_flow/PROJECTS commit -m "refactor: build db connection from yaml config, drop _shared dependency"
 ```
 
@@ -670,7 +670,7 @@ def introspect_table(conn, inspector, dialect, schema, table, table_type):
 ```bash
 cd /Users/weini/Documents/agent_flow/PROJECTS/data-agent
 export MYSQL_PWD=12345678
-git show HEAD:data-agent/catalog.json > /tmp/catalog_old.json
+git show HEAD:catalog.json > /tmp/catalog_old.json
 /Users/weini/.venvs/dev/bin/python tools/gen_catalog.py
 ```
 然后跑对比脚本（关键字段必须完全一致，column type 文本差异忽略）：
@@ -710,7 +710,7 @@ Expected: `All data-agent checks passed`（30 eval + smoke + lint）
 - [ ] **Step 7: 提交**
 
 ```bash
-git -C /Users/weini/Documents/agent_flow/PROJECTS add data-agent/tools/gen_catalog.py data-agent/catalog.json
+git -C /Users/weini/Documents/agent_flow/PROJECTS add tools/gen_catalog.py catalog.json
 git -C /Users/weini/Documents/agent_flow/PROJECTS commit -m "refactor: introspect catalog via SQLAlchemy Inspector and dialect adapter"
 ```
 
@@ -723,7 +723,7 @@ git -C /Users/weini/Documents/agent_flow/PROJECTS commit -m "refactor: introspec
 
 - [ ] **Step 1: 更新 .gitignore**
 
-在 `data-agent/.gitignore` 追加（避免真实凭证入库）：
+在 `.gitignore` 追加（避免真实凭证入库）：
 ```
 databases.yaml
 ```
@@ -767,7 +767,7 @@ Expected: pytest 全 PASS（16 项），check_all `All data-agent checks passed`
 - [ ] **Step 4: 提交**
 
 ```bash
-git -C /Users/weini/Documents/agent_flow/PROJECTS add data-agent/.gitignore data-agent/README.md
+git -C /Users/weini/Documents/agent_flow/PROJECTS add .gitignore README.md
 git -C /Users/weini/Documents/agent_flow/PROJECTS commit -m "docs: document multi-database config and ignore real databases.yaml"
 ```
 

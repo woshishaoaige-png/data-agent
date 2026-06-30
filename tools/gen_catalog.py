@@ -15,8 +15,8 @@ catalog.json 自省生成器（阶段 0 / G2 + G3）
       —— Agent 对非 OK 的表做"跨股票/排名/时序"查询时必须先熔断声明。
 
 用法：
-    python data-agent/tools/gen_catalog.py            # 生成到 data-agent/catalog.json
-    python data-agent/tools/gen_catalog.py --print    # 同时打印摘要
+    python tools/gen_catalog.py            # 生成到 catalog.json
+    python tools/gen_catalog.py --print    # 同时打印摘要
 """
 
 import argparse
@@ -253,7 +253,7 @@ def main():
 
     catalog = {
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
-        "source": "information_schema introspection (data-agent/tools/gen_catalog.py)",
+        "source": "information_schema introspection (tools/gen_catalog.py)",
         "coverage_legend": {
             "SINGLE_STOCK": "仅 1 只股票，禁止用于跨股票对比/排名/横截面",
             "TINY": "行数 < 100，时序/趋势结论不可靠，须披露样本量",

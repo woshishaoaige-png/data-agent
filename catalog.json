@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-06-29T00:59:50",
-  "source": "information_schema introspection (data-agent/tools/gen_catalog.py)",
+  "source": "information_schema introspection (tools/gen_catalog.py)",
   "coverage_legend": {
     "SINGLE_STOCK": "仅 1 只股票，禁止用于跨股票对比/排名/横截面",
     "TINY": "行数 < 100，时序/趋势结论不可靠，须披露样本量",
