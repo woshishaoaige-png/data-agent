@@ -42,6 +42,20 @@ def test_fq_table_pg():
     assert get_dialect("postgresql").fq_table("public", "t") == '"public"."t"'
 
 
+def test_statistical_functions_mysql():
+    dialect = get_dialect("mysql")
+    assert dialect.corr_sql("x", "y") == "CORR(x, y)"
+    assert dialect.stddev_samp_sql("x") == "STDDEV_SAMP(x)"
+    assert "NULLIF" in dialect.regr_slope_sql("y", "x")
+
+
+def test_statistical_functions_postgres():
+    dialect = get_dialect("postgresql")
+    assert dialect.corr_sql("x", "y") == "corr(y, x)"
+    assert dialect.regr_slope_sql("y", "x") == "regr_slope(y, x)"
+    assert dialect.regr_intercept_sql("y", "x") == "regr_intercept(y, x)"
+
+
 def test_unsupported_engine_raises():
     with pytest.raises(ValueError):
         get_dialect("oracle")

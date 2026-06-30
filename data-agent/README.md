@@ -13,13 +13,17 @@ data-agent/
 ├── sql/
 │   └── create_views.sql  ← 语义视图（v_kline = 14 张分片表合并）
 └── tools/
+    ├── build_dashboard.py ← 单文件 HTML dashboard：KPI、图表、可筛选表格
     ├── db.py             ← Agent 唯一数据库连接入口（统一 mysqlconnector 驱动）
     ├── check_all.py      ← 本地总检查入口
+    ├── context_extractor.py ← 从 catalog 生成业务域 reference/eval 草稿
     ├── gen_catalog.py    ← catalog.json 自省生成器
     ├── lint_references.py← 防止 reference 复制 catalog 事实
+    ├── profile_table.py  ← 表画像：空值、distinct、日期/数值范围、重复 key
     ├── query_guard.py    ← SQL 静态护栏：表/单位/coverage/join 检查
     ├── run_eval_cases.py ← 可执行 QueryGuard 回归用例
-    └── smoke_eval.py     ← 快速机制冒烟检查
+    ├── smoke_eval.py     ← 快速机制冒烟检查
+    └── validate_result.py← 查询结果验证：空结果、趋势点数、重复粒度、异常指标
 ```
 
 ## 阶段 0 已落地（G1–G4）
@@ -98,3 +102,71 @@ data-agent 的连接与自省支持 MySQL / PostgreSQL / Hive，通过 `database
 - `psycopg2` / `PyHive` 仅在用对应引擎时安装。
 - 视图 `sql/create_views.sql` 与单位/维度业务知识是 A 股数据集特定的，换库时需相应调整。
 - `DATA_AGENT_DB_URL` 可整体覆盖连接串。
+
+## Anthropic data plugin 借鉴后的新增流程
+
+### 1. 执行前护栏
+
+```bash
+$PY data-agent/tools/query_guard.py \
+  --intent "最新行业板块涨幅 Top5" \
+  --sql "SELECT ... FROM Stock.ths_daily_snapshot ..."
+```
+
+### 2. 执行后结果验证
+
+```bash
+$PY data-agent/tools/validate_result.py \
+  --intent "最近半年板块资金流趋势" \
+  --sql "SELECT trade_date, net_yi FROM Stock.v_board_moneyflow_ths_yi ..."
+```
+
+用于发现空结果、趋势点数不足、重复 grain（疑似 join explosion）、全 NULL 指标、百分比尺度异常、TopN 行数不足。
+
+统计型问题还会校验样本量、自检列和数值边界：相关系数必须在 `[-1,1]`，回归 `r2` 必须在 `[0,1]`，标准差不能为负，滚动结果必须暴露 `window_n`。
+
+### 3. 新表/陌生表画像
+
+```bash
+$PY data-agent/tools/profile_table.py --table Stock.stock_moneyflow_snapshot --limit 5000
+```
+
+用于补充 `catalog.json` 没表达的真实值分布：空值率、distinct、top values、日期范围、数值范围、重复自然 key。
+
+### 4. 可视化 / Dashboard
+
+```bash
+$PY data-agent/tools/build_dashboard.py \
+  --title "板块资金流 Dashboard" \
+  --sql "SELECT trade_date, name, net_yi FROM Stock.v_board_moneyflow_ths_yi ..." \
+  --out /tmp/board_moneyflow_dashboard.html
+```
+
+生成单文件 HTML，内嵌数据，提供 KPI、自动图表、可筛选/排序表格。Dashboard 是呈现层：SQL 仍应先过 `query_guard.py`，结果仍应先过 `validate_result.py`。
+
+### 5. 新业务域上下文草稿
+
+```bash
+$PY data-agent/tools/context_extractor.py \
+  --domain moneyflow \
+  --pattern moneyflow \
+  --out-dir /tmp/data-agent-context
+```
+
+这会生成可 review 的 reference markdown 和 eval 候选。草稿不自动进入 `references/` 或 `evals/`，需要人工确认业务口径后再固化。
+
+### 6. 复杂 SQL 能力参考
+
+- `references/statistical_sql.md`：CORR / REGR / STDDEV 的样本量、配对非空、单位归一和输出自检规则。
+- `references/window_frames.md`：滚动、累计、排名、最新 TopN 的窗口帧和 CTE 分层规则。
+
+复杂统计或窗口 SQL 应先按 reference 写成 staged CTE，再过 `query_guard.py`；执行后用 `validate_result.py` 检查样本量和结果边界。
+
+### 7. 对抗性 Eval
+
+`tools/run_eval_cases.py` 支持两类用例：
+
+- `tool=query_guard`：静态 SQL 风险检查。
+- `tool=validate_result`：用 `rows_json` 检查执行后结果形状。
+
+新增复杂 SQL 能力时，eval 至少经过两轮对抗：第一轮生成攻击样本，第二轮审查已落地规则的 false negative / false positive，再把稳定样本固化进 `evals/eval_cases.json`。

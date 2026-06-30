@@ -27,7 +27,11 @@ Use `data-agent/tools/db.py` as the only connection entry. It defaults to
 3. Prefer semantic `v_*` views when they exist, especially normalized `_yi` money views.
 4. Run SQL through `data-agent/tools/query_guard.py` or apply the same policy before trusting it.
 5. Write SQL only after checking coverage, flags, date range, units, and join keys.
-6. Run the query, inspect row counts and result shape, then answer with caveats.
+6. For unfamiliar or newly changed tables, profile actual values with `data-agent/tools/profile_table.py`.
+7. For correlation, regression, standard deviation, rolling, cumulative, or ranking windows, read `references/statistical_sql.md` and/or `references/window_frames.md` before writing SQL.
+8. Run the query, then validate row counts, sample checks, and result shape with `data-agent/tools/validate_result.py` before answering.
+9. When the user asks for a chart or dashboard, validate the analysis first, then create a self-contained HTML view with `data-agent/tools/build_dashboard.py`.
+10. When a new domain, metric definition, or recurring gotcha is discovered, draft context with `data-agent/tools/context_extractor.py`; review before promoting it into `references/` or evals.
 
 ## P0 Rules
 
@@ -57,6 +61,24 @@ Use `data-agent/tools/db.py` as the only connection entry. It defaults to
 - Sentiment: `finance.sentiment_index`, `finance.sentiment_nlp_source`.
 - Research/holdings: report/research/fund/holder tables; many are sparse or short-history.
 - Strategy products: prefer `Stock.v_strategy_selection_latest` for latest normalized labels; raw tables are `Stock.daily_selection_results`, `Stock.violent_k_signals`, ETF/pool tables.
+
+## Validation Tools
+
+- Pre-query: `tools/query_guard.py --sql ... --intent ...` catches known unsafe SQL patterns.
+- Post-query: `tools/validate_result.py --sql ... --intent ... --json` checks empty results, insufficient trend points, duplicate grains, all-null metrics, suspicious percentages, and short TopN outputs.
+- Exploration: `tools/profile_table.py --table Stock.some_table` profiles actual values, nulls, distinct counts, date ranges, numeric ranges, and duplicate natural keys.
+- Presentation: `tools/build_dashboard.py --sql ... --title ... --out ...` creates an offline HTML dashboard from already-validated results. Do not use dashboards to bypass guard/validation.
+- Knowledge capture: `tools/context_extractor.py --domain moneyflow --pattern moneyflow --out-dir /tmp/data-agent-context` creates reviewable reference/eval drafts; do not treat drafts as authoritative until reviewed.
+
+## Complex SQL Rules
+
+- Statistical SQL must expose sample size (`n`, `pairwise_non_null_n`, or `regr_count`) and filter pairwise non-null inputs before `CORR` or `REGR_*`.
+- Money metrics used in statistical SQL must be normalized before comparison. Prefer semantic `_yi` views.
+- Correlation/regression answers require enough sample rows; weak samples should be blocked or clearly warned by `validate_result.py`.
+- Aggregate time-series windows must use explicit `ROWS` frames. Do not rely on default window frames.
+- Rolling windows must expose `window_n`; answer only from complete windows unless the user explicitly asks for partial windows.
+- Latest TopN queries must filter to the latest valid date before ranking.
+- Daily TopN/ranking queries must partition the rank by date.
 
 ## Answer Shape
 

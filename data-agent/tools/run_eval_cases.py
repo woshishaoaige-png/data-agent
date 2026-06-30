@@ -1,4 +1,4 @@
-"""Run executable QueryGuard eval cases."""
+"""Run executable data-agent guardrail eval cases."""
 
 import json
 import sys
@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from query_guard import guard_sql  # noqa: E402
+from validate_result import validate_rows  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ROOT / "evals" / "eval_cases.json"
@@ -27,11 +28,21 @@ def case_passed(case, result):
     return True, ""
 
 
+def run_case(case):
+    tool = case.get("tool") or case.get("kind") or "query_guard"
+    if tool == "query_guard":
+        return guard_sql(case["sql"], case.get("intent", ""))
+    if tool == "validate_result":
+        rows = case.get("rows_json", [])
+        return validate_rows(rows, intent=case.get("intent", ""), sql=case.get("sql", ""))
+    raise ValueError(f"unsupported eval tool for {case['id']}: {tool}")
+
+
 def main():
     payload = json.loads(CASES.read_text(encoding="utf-8"))
     failures = []
     for case in payload["cases"]:
-        result = guard_sql(case["sql"], case.get("intent", ""))
+        result = run_case(case)
         ok, reason = case_passed(case, result)
         status = "PASS" if ok else "FAIL"
         print(f"{status} {case['id']} [{result.status}]")

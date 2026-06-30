@@ -16,12 +16,45 @@ CATALOG = ROOT / "catalog.json"
 JOIN_POLICY = ROOT / "policies" / "join_policy.json"
 
 FROM_JOIN_TOKEN_RE = re.compile(r"\b(?:from|join)\s+([`A-Za-z_][`.\w]*)", re.IGNORECASE)
+CTE_NAME_RE = re.compile(r"(?:\bwith|,)\s+([A-Za-z_]\w*)\s*(?:\([^)]*\))?\s+as\s*\(", re.IGNORECASE)
 MONEY_RE = re.compile(r"(amount|money|net_|buy_|sell_|rzye|rzmre|rqye|rzrqye)", re.IGNORECASE)
 # 注意：不收录"最近"——它既指"最新一次"(列表)又指"一段时间"(趋势)，歧义太大，
 # 会把 *_latest 快照的列表查询误判为趋势。真趋势由下列更明确的词兜住。
 TREND_RE = re.compile(r"(trend|趋势|走势|过去|半年|三个月|一个月|变化|持续)", re.IGNORECASE)
 RANK_RE = re.compile(r"(top|rank|排名|最高|最低|最多|最少|占比|分布|全市场)", re.IGNORECASE)
 LATEST_RE = re.compile(r"(today|current|latest|今天|当前|最新|今日)", re.IGNORECASE)
+STAT_RE = re.compile(
+    r"\b(corr|correlation|covar_samp|covar_pop|variance|var_samp|var_pop|"
+    r"regr_slope|regr_intercept|regr_r2|regr_count|stddev|stddev_samp|stddev_pop)\s*\(",
+    re.IGNORECASE,
+)
+CORR_RE = re.compile(r"\bcorr\s*\(", re.IGNORECASE)
+PAIRWISE_STAT_RE = re.compile(r"\b(corr|covar_samp|covar_pop|regr_(slope|intercept|r2|count))\s*\(", re.IGNORECASE)
+REGR_RE = re.compile(r"\bregr_(slope|intercept|r2|count)\s*\(", re.IGNORECASE)
+AD_HOC_REGR_RE = re.compile(r"count\s*\(\s*\*\s*\)\s*\*\s*sum\s*\([^)]*\*[^)]*\)\s*-\s*sum\s*\([^)]*\)\s*\*\s*sum\s*\(", re.IGNORECASE)
+STDDEV_POP_RE = re.compile(r"\bstddev_pop\s*\(", re.IGNORECASE)
+STAT_SAMPLE_RE = re.compile(r"\b(count\s*\(|\bn\s+|as\s+n\b|pairwise_non_null_n|regr_count|window_n)", re.IGNORECASE)
+PAIRWISE_AND_RE = re.compile(r"\b\w+(?:\.\w+)?\s+is\s+not\s+null\s+and\s+\w+(?:\.\w+)?\s+is\s+not\s+null\b", re.IGNORECASE)
+PAIRWISE_NOT_NULL_TOKEN_RE = re.compile(r"\b\w+(?:\.\w+)?\s+is\s+not\s+null\b", re.IGNORECASE)
+NULL_OR_NULL_RE = re.compile(r"is\s+not\s+null\s*\)?\s+or\s+\(?\s*\w+(?:\.\w+)?\s+is\s+not\s+null", re.IGNORECASE)
+DEMORGAN_NOT_NULL_RE = re.compile(r"not\s*\([^)]*\bis\s+null\b[^)]*\bor\b[^)]*\bis\s+null\b[^)]*\)", re.IGNORECASE)
+SAMPLE_VOL_RE = re.compile(r"(sample|样本|波动|volatility|stddev|标准差)", re.IGNORECASE)
+ROLLING_RE = re.compile(r"(rolling|moving|滚动|移动|均线|近\d+日|最近\d+日)", re.IGNORECASE)
+DAILY_RANK_RE = re.compile(r"(每天|每日|逐日|daily)", re.IGNORECASE)
+AGG_WINDOW_RE = re.compile(
+    r"\b(sum|avg|min|max|count|stddev(?:_samp|_pop)?|corr)\s*\((?:[^()]|\([^()]*\))*\)\s+over\s*\(([^)]*)\)",
+    re.IGNORECASE | re.DOTALL,
+)
+NAMED_AGG_WINDOW_RE = re.compile(
+    r"\b(sum|avg|min|max|count|stddev(?:_samp|_pop)?|corr)\s*\((?:[^()]|\([^()]*\))*\)\s+over\s+([A-Za-z_]\w*)\b",
+    re.IGNORECASE | re.DOTALL,
+)
+RANK_WINDOW_RE = re.compile(
+    r"\b(row_number|rank|dense_rank|ntile)\s*\([^)]*\)\s+over\s*\(([^)]*)\)",
+    re.IGNORECASE | re.DOTALL,
+)
+WINDOW_REF_RE = re.compile(r"\bover\s+[A-Za-z_]\w*\b", re.IGNORECASE)
+WINDOW_DEF_RE = re.compile(r"\bwindow\s+[A-Za-z_]\w*\s+as\s*\(([^)]*)\)", re.IGNORECASE | re.DOTALL)
 
 
 @dataclass
@@ -49,18 +82,24 @@ def load_policy():
     return json.loads(JOIN_POLICY.read_text(encoding="utf-8"))
 
 
+def strip_sql_comments(sql):
+    sql = re.sub(r"/\*.*?\*/", " ", sql, flags=re.DOTALL)
+    return re.sub(r"--[^\n]*", " ", sql)
+
+
 def normalize_table(schema, table):
     return f"{schema}.{table}"
 
 
 def extract_tables(sql):
+    cte_names = {name.lower() for name in CTE_NAME_RE.findall(sql)}
     found = []
     for token in FROM_JOIN_TOKEN_RE.findall(sql):
         token = token.strip("`").replace("`", "")
         if "." in token:
             schema, table = token.split(".", 1)
             found.append(normalize_table(schema, table))
-        elif token.lower() not in {"select", "where", "on", "using"}:
+        elif token.lower() not in {"select", "where", "on", "using"} and token.lower() not in cte_names:
             found.append(normalize_table("Stock", token))
     return sorted(set(found))
 
@@ -115,13 +154,114 @@ def check_unapproved_joins(policy, tables, result):
             result.add_warning(f"unregistered_join:{left}<->{right}: verify join keys and date overlap")
 
 
+def check_statistical_sql(sql, text, tables, catalog, result):
+    stat_like = STAT_RE.search(sql) or AD_HOC_REGR_RE.search(sql)
+    if not stat_like:
+        return
+
+    if AD_HOC_REGR_RE.search(sql):
+        result.add_error("ad_hoc_regression_formula: use dialect regression helpers and expose self-check columns")
+
+    if REGR_RE.search(sql) and not re.search(r"\b(count\s*\(|regr_count\s*\()", sql, re.IGNORECASE):
+        result.add_error("missing_regr_self_check: regression SQL must expose sample count")
+    elif not STAT_SAMPLE_RE.search(sql):
+        result.add_error("missing_stat_sample_check: statistical SQL must expose sample size")
+
+    has_pairwise_filter = (
+        len(PAIRWISE_NOT_NULL_TOKEN_RE.findall(sql)) >= 2
+        or DEMORGAN_NOT_NULL_RE.search(sql)
+    )
+    if (PAIRWISE_STAT_RE.search(sql) or AD_HOC_REGR_RE.search(sql)) and not has_pairwise_filter:
+        result.add_error("pairwise_non_null_filter: correlation/regression must filter pairwise non-null inputs")
+    if NULL_OR_NULL_RE.search(sql):
+        result.add_error("pairwise_non_null_filter: use AND, not OR, for pairwise non-null statistical inputs")
+
+    units = {
+        catalog_info(catalog, fq).get("unit")
+        for fq in tables
+        if catalog_info(catalog, fq) and catalog_info(catalog, fq).get("unit")
+    }
+    if len(units) > 1 and MONEY_RE.search(text) and not re.search(r"/\s*(10000|100000000)|_yi\b", sql, re.IGNORECASE):
+        result.add_error("stat_unit_not_normalized: statistical money inputs must be normalized before use")
+
+    if STDDEV_POP_RE.search(sql) and SAMPLE_VOL_RE.search(text):
+        result.add_warning("stddev_sample_required: use sample standard deviation for sample volatility")
+
+    if (
+        re.search(r"\bgroup\s+by\b", sql, re.IGNORECASE)
+        and re.search(r"\border\s+by\b[^;]*(corr|slope|r2|stddev)", sql, re.IGNORECASE)
+        and not re.search(r"\bhaving\b[^;]*(n|count\s*\()[^;]*(>=|>)\s*(20|[3-9]\d+)", sql, re.IGNORECASE)
+        and not re.search(r"\bwhere\b[^;]*\bn\b\s*(>=|>)\s*(20|[3-9]\d+)", sql, re.IGNORECASE)
+    ):
+        result.add_warning("missing_stat_sample_threshold: grouped statistical ranking should filter to a minimum sample")
+
+
+def _has_window_def_with_rows(sql):
+    return any(" rows " in f" {match.group(1).lower()} " for match in WINDOW_DEF_RE.finditer(sql))
+
+
+def check_window_sql(sql, text, result):
+    lowered = sql.lower()
+    aggregate_windows = list(AGG_WINDOW_RE.finditer(sql))
+    named_aggregate_windows = list(NAMED_AGG_WINDOW_RE.finditer(sql))
+    rank_windows = list(RANK_WINDOW_RE.finditer(sql))
+
+    for match in aggregate_windows:
+        frame = match.group(2).lower()
+        if "order by" in frame and " rows " not in f" {frame} ":
+            result.add_error("window_missing_rows_frame: aggregate time-series windows must use an explicit ROWS frame")
+            break
+
+    if named_aggregate_windows and not _has_window_def_with_rows(sql):
+        result.add_error("window_missing_rows_frame: named aggregate windows must define an explicit ROWS frame")
+
+    has_rolling_aggregate = bool((aggregate_windows or named_aggregate_windows) and (ROLLING_RE.search(text) or " preceding " in lowered))
+    if has_rolling_aggregate and not re.search(r"\bwindow_n\b", sql, re.IGNORECASE):
+        result.add_error("rolling_window_missing_window_n: rolling windows must expose window_n")
+
+    if (
+        re.search(r"\bwith\b", sql, re.IGNORECASE)
+        and re.search(r"\blimit\s+\d+", sql, re.IGNORECASE)
+        and re.search(r"\b(group\s+by|avg\s*\(|sum\s*\(|count\s*\(|stddev|corr\s*\()", sql, re.IGNORECASE)
+        and re.search(r"\blimit\s+\d+[\s\S]*\b(group\s+by|avg\s*\(|sum\s*\(|count\s*\(|stddev|corr\s*\()", sql, re.IGNORECASE)
+    ):
+        result.add_error("nested_limit_before_aggregation: do not LIMIT nested source rows before aggregation")
+
+    if LATEST_RE.search(text) and rank_windows and re.search(r"\bdate\s*>=|\btrade_date\s*>=|\bdate\s+between\b|\btrade_date\s+between\b", sql, re.IGNORECASE):
+        result.add_error("cross_date_ranking: latest TopN ranking must filter to the latest date before ranking")
+    if (
+        LATEST_RE.search(text)
+        and RANK_RE.search(text)
+        and re.search(r"\border\s+by\b[\s\S]*\blimit\s+\d+", sql, re.IGNORECASE)
+        and re.search(r"\b(date|trade_date)\s*>=|\b(date|trade_date)\s+between\b", sql, re.IGNORECASE)
+        and not re.search(r"\b(date|trade_date)\s*=\s*\(\s*select\s+max\s*\(", sql, re.IGNORECASE)
+    ):
+        result.add_error("cross_date_ranking: latest TopN must filter to the latest date before ORDER BY/LIMIT")
+
+    for match in rank_windows:
+        frame = match.group(2).lower()
+        if "order by" not in frame:
+            result.add_error("window_missing_order_by: ranking windows must include ORDER BY")
+        if DAILY_RANK_RE.search(text) and "partition by" not in frame:
+            result.add_error("window_missing_partition_by_date: daily rankings must partition by date")
+
+    if (
+        ROLLING_RE.search(text)
+        and re.search(r"\bcode\s+in\s*\(", sql, re.IGNORECASE)
+        and aggregate_windows
+        and not any("partition by" in match.group(2).lower() for match in aggregate_windows)
+    ):
+        result.add_error("window_missing_partition_by_entity: entity rolling windows must partition by entity")
+
+
 def guard_sql(sql, intent=""):
     catalog = load_catalog()
     policy = load_policy()
     result = GuardResult()
-    tables = extract_tables(sql)
+    clean_sql = strip_sql_comments(sql)
+    tables = extract_tables(clean_sql)
     result.tables = tables
-    text = f"{intent}\n{sql}"
+    text = f"{intent}\n{clean_sql}"
 
     for fq in tables:
         info = catalog_info(catalog, fq)
@@ -139,7 +279,7 @@ def guard_sql(sql, intent=""):
             result.add_warning(f"tiny_source:{fq}: disclose row count and date range")
         if "SHORT_HISTORY" in flags and TREND_RE.search(text):
             result.add_error(f"short_history_trend:{fq}: cannot support trend/history claim")
-        if "STALE_CURRENT" in flags and LATEST_RE.search(text):
+        if "STALE_CURRENT" in flags and LATEST_RE.search(intent):
             result.add_warning(f"stale_current:{fq}: disclose local latest date")
 
     units = sorted({
@@ -153,6 +293,8 @@ def guard_sql(sql, intent=""):
 
     check_forbidden_pairs(policy, tables, result)
     check_unapproved_joins(policy, tables, result)
+    check_statistical_sql(clean_sql, text, tables, catalog, result)
+    check_window_sql(clean_sql, text, result)
     return result
 
 

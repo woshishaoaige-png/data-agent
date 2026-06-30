@@ -211,6 +211,199 @@
       "sql": "SELECT d.name, d.net_yi, t.net_yi FROM Stock.v_board_moneyflow_dc_yi d JOIN Stock.v_board_moneyflow_ths_yi t ON d.name=t.name WHERE d.name LIKE '%半导体%'",
       "expect_status": "BLOCK",
       "must_contain": ["forbidden_join:dc_to_ths_board_code_or_name"]
+    },
+    {
+      "id": "block_corr_missing_sample_self_check",
+      "tool": "query_guard",
+      "intent": "过去60个交易日个股涨跌幅和主力净流入相关性",
+      "sql": "SELECT CORR(k.pctChg, f.main_net_yi) AS corr_pct_main_flow FROM Stock.v_kline k JOIN Stock.v_stock_moneyflow_yi f ON k.code=f.code AND k.date=f.trade_date WHERE k.code='000001' AND k.pctChg IS NOT NULL AND f.main_net_yi IS NOT NULL",
+      "expect_status": "BLOCK",
+      "must_contain": ["missing_stat_sample_check"]
+    },
+    {
+      "id": "block_corr_or_non_null_filter",
+      "tool": "query_guard",
+      "intent": "计算涨跌幅和主力资金相关性，并给样本数",
+      "sql": "SELECT COUNT(*) AS n, CORR(k.pctChg, f.main_net_yi) AS corr_pct_main_flow FROM Stock.v_kline k JOIN Stock.v_stock_moneyflow_yi f ON k.code=f.code AND k.date=f.trade_date WHERE k.code='000001' AND (k.pctChg IS NOT NULL OR f.main_net_yi IS NOT NULL)",
+      "expect_status": "BLOCK",
+      "must_contain": ["pairwise_non_null_filter"]
+    },
+    {
+      "id": "block_regr_missing_count",
+      "tool": "query_guard",
+      "intent": "回归主力净流入对个股涨跌幅的解释力",
+      "sql": "SELECT REGR_SLOPE(k.pctChg, f.main_net_yi) AS slope FROM Stock.v_kline k JOIN Stock.v_stock_moneyflow_yi f ON k.code=f.code AND k.date=f.trade_date WHERE k.code='000001' AND k.pctChg IS NOT NULL AND f.main_net_yi IS NOT NULL",
+      "expect_status": "BLOCK",
+      "must_contain": ["missing_regr_self_check"]
+    },
+    {
+      "id": "warn_stddev_pop_for_sample_volatility",
+      "tool": "query_guard",
+      "intent": "用样本波动率衡量过去60个交易日涨跌幅波动",
+      "sql": "SELECT STDDEV_POP(pctChg) AS volatility_pct, COUNT(pctChg) AS n FROM Stock.v_kline WHERE code='000001' AND pctChg IS NOT NULL",
+      "expect_status": "WARN",
+      "must_contain": ["stddev_sample_required"]
+    },
+    {
+      "id": "block_nested_cte_rolling_missing_rows_frame",
+      "tool": "query_guard",
+      "intent": "计算每只股票近5日主力净流入滚动均值，并取最新日最高的10只",
+      "sql": "WITH base AS (SELECT trade_date, ts_code, main_net_yi FROM Stock.v_stock_moneyflow_yi WHERE trade_date >= DATE_SUB((SELECT MAX(trade_date) FROM Stock.v_stock_moneyflow_yi), INTERVAL 30 DAY)), rolled AS (SELECT trade_date, ts_code, AVG(main_net_yi) OVER (PARTITION BY ts_code ORDER BY trade_date) AS main_net_ma5 FROM base) SELECT * FROM rolled WHERE trade_date = (SELECT MAX(trade_date) FROM rolled) ORDER BY main_net_ma5 DESC LIMIT 10",
+      "expect_status": "BLOCK",
+      "must_contain": ["window_missing_rows_frame"]
+    },
+    {
+      "id": "allow_rank_window_no_rows_frame_latest_day",
+      "tool": "query_guard",
+      "intent": "今天全市场涨幅最高10只股票，使用排名窗口",
+      "sql": "WITH latest_date AS (SELECT MAX(date) AS d FROM Stock.v_kline), ranked AS (SELECT k.date, k.code, k.name, k.pctChg, ROW_NUMBER() OVER (ORDER BY k.pctChg DESC) AS rn FROM Stock.v_kline k JOIN latest_date ld ON k.date = ld.d) SELECT date, code, name, pctChg, rn FROM ranked WHERE rn <= 10 ORDER BY rn",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "block_rolling_rows_frame_missing_window_n",
+      "tool": "query_guard",
+      "intent": "平安银行最近20日均线",
+      "sql": "WITH rolled AS (SELECT date, code, close, AVG(close) OVER (PARTITION BY code ORDER BY date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS ma20 FROM Stock.v_kline WHERE code = '000001') SELECT date, code, close, ma20 FROM rolled ORDER BY date DESC LIMIT 20",
+      "expect_status": "BLOCK",
+      "must_contain": ["rolling_window_missing_window_n"]
+    },
+    {
+      "id": "block_nested_limit_before_aggregation",
+      "tool": "query_guard",
+      "intent": "最近20个交易日全市场日成交额均值",
+      "sql": "WITH recent_rows AS (SELECT date, code, name, amount FROM Stock.v_kline ORDER BY date DESC LIMIT 500), by_day AS (SELECT date, SUM(amount) AS market_amount FROM recent_rows GROUP BY date) SELECT AVG(market_amount) AS avg_market_amount FROM by_day",
+      "expect_status": "BLOCK",
+      "must_contain": ["nested_limit_before_aggregation"]
+    },
+    {
+      "id": "block_latest_topn_cross_date_rank",
+      "tool": "query_guard",
+      "intent": "今天全市场涨幅最高10只股票",
+      "sql": "WITH ranked AS (SELECT date, code, name, pctChg, ROW_NUMBER() OVER (ORDER BY pctChg DESC) AS rn FROM Stock.v_kline WHERE date >= DATE_SUB((SELECT MAX(date) FROM Stock.v_kline), INTERVAL 20 DAY)) SELECT date, code, name, pctChg, rn FROM ranked WHERE rn <= 10 ORDER BY rn",
+      "expect_status": "BLOCK",
+      "must_contain": ["cross_date_ranking"]
+    },
+    {
+      "id": "block_result_corr_out_of_range",
+      "tool": "validate_result",
+      "intent": "相关系数结果校验",
+      "rows_json": [{"metric": "corr_pct_main_flow", "corr": 1.12, "pairwise_non_null_n": 45}],
+      "expect_status": "BLOCK",
+      "must_contain": ["corr_out_of_range"]
+    },
+    {
+      "id": "block_result_regr_r2_out_of_range",
+      "tool": "validate_result",
+      "intent": "回归结果校验",
+      "rows_json": [{"metric": "regr_main_flow_to_pct", "slope": 0.8, "regr_count": 42, "r2": 1.07}],
+      "expect_status": "BLOCK",
+      "must_contain": ["regr_r2_out_of_range"]
+    },
+    {
+      "id": "block_result_stddev_negative",
+      "tool": "validate_result",
+      "intent": "波动率结果校验",
+      "rows_json": [{"code": "000001", "stddev_pct": -2.3, "n": 60}],
+      "expect_status": "BLOCK",
+      "must_contain": ["stddev_negative"]
+    },
+    {
+      "id": "block_result_latest_topn_multiple_dates",
+      "tool": "validate_result",
+      "intent": "今天全市场涨幅最高5只股票",
+      "sql": "WITH ranked AS (...) SELECT date, code, pctChg, rn FROM ranked WHERE rn <= 5",
+      "rows_json": [
+        {"date": "2026-06-26", "code": "000001", "pctChg": 10.02, "rn": 1},
+        {"date": "2026-06-25", "code": "000002", "pctChg": 9.88, "rn": 2},
+        {"date": "2026-06-24", "code": "000003", "pctChg": 9.51, "rn": 3}
+      ],
+      "expect_status": "BLOCK",
+      "must_contain": ["cross_date_topn_multiple_dates"]
+    },
+    {
+      "id": "block_result_rolling_metric_missing_window_n",
+      "tool": "validate_result",
+      "intent": "平安银行最近5日滚动均线",
+      "sql": "SELECT date, code, ma5 FROM rolled ORDER BY date DESC LIMIT 5",
+      "rows_json": [
+        {"date": "2026-06-26", "code": "000001", "ma5": 12.31},
+        {"date": "2026-06-25", "code": "000001", "ma5": 12.22}
+      ],
+      "expect_status": "BLOCK",
+      "must_contain": ["rolling_window_missing_window_n"]
+    },
+    {
+      "id": "block_ad_hoc_regression_formula",
+      "tool": "query_guard",
+      "intent": "回归主力净流入对涨跌幅的解释力",
+      "sql": "SELECT (COUNT(*) * SUM(x * y) - SUM(x) * SUM(y)) / NULLIF(COUNT(*) * SUM(x * x) - SUM(x) * SUM(x), 0) AS slope FROM Stock.v_kline",
+      "expect_status": "BLOCK",
+      "must_contain": ["ad_hoc_regression_formula", "pairwise_non_null_filter"]
+    },
+    {
+      "id": "block_covariance_missing_sample_self_check",
+      "tool": "query_guard",
+      "intent": "计算涨跌幅和主力资金协方差",
+      "sql": "SELECT COVAR_SAMP(k.pctChg, f.main_net_yi) AS covariance FROM Stock.v_kline k JOIN Stock.v_stock_moneyflow_yi f ON k.code=f.code AND k.date=f.trade_date WHERE k.pctChg IS NOT NULL AND f.main_net_yi IS NOT NULL",
+      "expect_status": "BLOCK",
+      "must_contain": ["missing_stat_sample_check"]
+    },
+    {
+      "id": "block_parenthesized_or_non_null_filter",
+      "tool": "query_guard",
+      "intent": "计算涨跌幅和主力资金相关性",
+      "sql": "SELECT COUNT(*) AS n, CORR(k.pctChg, f.main_net_yi) AS corr_pct_main_flow FROM Stock.v_kline k JOIN Stock.v_stock_moneyflow_yi f ON k.code=f.code AND k.date=f.trade_date WHERE (k.pctChg IS NOT NULL) OR (f.main_net_yi IS NOT NULL)",
+      "expect_status": "BLOCK",
+      "must_contain": ["pairwise_non_null_filter"]
+    },
+    {
+      "id": "block_named_aggregate_window_missing_rows_frame",
+      "tool": "query_guard",
+      "intent": "平安银行最近20日均线",
+      "sql": "SELECT date, code, AVG(close) OVER w AS ma20 FROM Stock.v_kline WINDOW w AS (PARTITION BY code ORDER BY date)",
+      "expect_status": "BLOCK",
+      "must_contain": ["window_missing_rows_frame"]
+    },
+    {
+      "id": "block_window_comment_spoof_rows_frame",
+      "tool": "query_guard",
+      "intent": "累计主力净流入",
+      "sql": "SELECT trade_date, ts_code, SUM(main_net_yi) OVER (PARTITION BY ts_code ORDER BY trade_date /* rows frame missing */) AS cum_net FROM Stock.v_stock_moneyflow_yi",
+      "expect_status": "BLOCK",
+      "must_contain": ["window_missing_rows_frame"]
+    },
+    {
+      "id": "allow_cte_column_list_window",
+      "tool": "query_guard",
+      "intent": "平安银行最近20个完整窗口的20日均线",
+      "sql": "WITH base(trade_date, code, close) AS (SELECT date, code, close FROM Stock.v_kline WHERE code='000001'), rolled AS (SELECT trade_date, code, AVG(close) OVER (PARTITION BY code ORDER BY trade_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS ma20, COUNT(close) OVER (PARTITION BY code ORDER BY trade_date ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS window_n FROM base) SELECT * FROM rolled WHERE window_n >= 20",
+      "expect_not_status": "BLOCK",
+      "must_contain": []
+    },
+    {
+      "id": "block_latest_rank_between_cross_date",
+      "tool": "query_guard",
+      "intent": "今天全市场涨幅最高10只股票",
+      "sql": "WITH ranked AS (SELECT date, code, pctChg, ROW_NUMBER() OVER (ORDER BY pctChg DESC) AS rn FROM Stock.v_kline WHERE date BETWEEN DATE_SUB((SELECT MAX(date) FROM Stock.v_kline), INTERVAL 20 DAY) AND (SELECT MAX(date) FROM Stock.v_kline)) SELECT * FROM ranked WHERE rn <= 10",
+      "expect_status": "BLOCK",
+      "must_contain": ["cross_date_ranking"]
+    },
+    {
+      "id": "block_result_stat_aliases_out_of_range",
+      "tool": "validate_result",
+      "intent": "相关和回归结果校验",
+      "rows_json": [{"rho": 1.2, "r_squared": 1.1, "n": 45}],
+      "expect_status": "BLOCK",
+      "must_contain": ["corr_out_of_range:rho", "regr_r2_out_of_range:r_squared"]
+    },
+    {
+      "id": "block_result_rolling_avg_alias_missing_window_n",
+      "tool": "validate_result",
+      "intent": "平安银行最近5日平均收盘价",
+      "rows_json": [{"date": "2026-06-26", "code": "000001", "avg_close": 12.3}],
+      "expect_status": "BLOCK",
+      "must_contain": ["rolling_window_missing_window_n"]
     }
   ]
 }
